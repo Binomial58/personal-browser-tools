@@ -1,0 +1,33 @@
+.atcoder-problem-html-copier {
+  display: flex;
+  justify-content: flex-end;
+  margin: 12px 0;
+}
+
+.atcoder-problem-html-copier__button {
+  appearance: none;
+  border: 1px solid #2e6da4;
+  border-radius: 4px;
+  background: #337ab7;
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 600;
+  line-height: 1.4;
+  padding: 6px 12px;
+}
+
+.atcoder-problem-html-copier__button:hover:not(:disabled) {
+  background: #286090;
+  border-color: #204d74;
+}
+
+.atcoder-problem-html-copier__button:focus-visible {
+  outline: 2px solid #111;
+  outline-offset: 2px;
+}
+
+.atcoder-problem-html-copier__button:disabled {
+  cursor: default;
+  opacity: 0.75;
+}
