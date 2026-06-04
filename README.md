@@ -6,6 +6,8 @@
 
 - [AtCoder Problem HTML Copier](extensions/atcoder-problem-html-copier/)
 - [AtCoder Sample Downloader](extensions/atcoder-sample-downloader/)
+- [AtCoder Pastel Theme](extensions/atcoder-pastel-theme/)
+- [AtCoder Contest Progress](extensions/atcoder-contest-progress/)
 
 ## 構成
 

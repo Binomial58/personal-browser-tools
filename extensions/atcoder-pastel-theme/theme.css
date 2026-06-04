@@ -1,0 +1,213 @@
+:root {
+  --apt-accent: #ad5877;
+  --apt-accent-hover: #7f415e;
+  --apt-pink: #ffb8d1;
+  --apt-mint: #c2ffdf;
+  --apt-yellow: #f9f158;
+  --apt-lavender: #ebc9ff;
+  --apt-purple: #5a5475;
+  --apt-purple-deep: #464258;
+  --apt-border: #dfcfea;
+  --apt-soft: #fbf7fd;
+  --apt-code-bg: #faf7fc;
+  --apt-text: #2e2a3d;
+  --apt-muted: #6c637d;
+}
+
+body {
+  background: #fff !important;
+}
+
+#main-container,
+#main-div > .container {
+  background: #fff !important;
+}
+
+.navbar,
+.navbar-inverse,
+.navbar-default {
+  background: var(--apt-purple-deep) !important;
+  border-color: #3a364b !important;
+}
+
+.navbar a,
+.navbar .navbar-brand,
+.navbar .navbar-nav > li > a,
+.navbar-inverse .navbar-nav > li > a {
+  color: #fffaff !important;
+}
+
+.navbar a:hover,
+.navbar .navbar-nav > li > a:hover,
+.navbar .navbar-nav > .active > a {
+  background: var(--apt-purple) !important;
+  color: var(--apt-yellow) !important;
+}
+
+a {
+  color: var(--apt-accent) !important;
+}
+
+a:hover,
+a:focus {
+  color: var(--apt-accent-hover) !important;
+}
+
+.nav-tabs {
+  border-bottom-color: var(--apt-border) !important;
+}
+
+.nav-tabs > li > a {
+  background: #fff !important;
+  border-color: var(--apt-border) !important;
+  color: var(--apt-accent) !important;
+}
+
+.nav-tabs > li.active > a,
+.nav-tabs > li.active > a:focus,
+.nav-tabs > li.active > a:hover {
+  background: var(--apt-soft) !important;
+  border-color: var(--apt-border) !important;
+  border-bottom-color: #fff !important;
+  color: var(--apt-text) !important;
+}
+
+h1,
+h2,
+h3,
+h4,
+.h1,
+.h2,
+.h3,
+.h4 {
+  color: var(--apt-text) !important;
+}
+
+#task-statement h3,
+#task-statement h4 {
+  border-left: 4px solid var(--apt-pink);
+  padding-left: 10px;
+}
+
+hr {
+  border-top-color: var(--apt-border) !important;
+}
+
+.panel,
+.well,
+.modal-content,
+.dropdown-menu,
+.table,
+.table-bordered {
+  border-color: var(--apt-border) !important;
+}
+
+.table > thead > tr > th,
+.panel-heading {
+  background: var(--apt-soft) !important;
+  color: var(--apt-text) !important;
+}
+
+.table > thead > tr > th,
+.table > tbody > tr > th,
+.table > tbody > tr > td,
+.table-bordered > thead > tr > th,
+.table-bordered > tbody > tr > th,
+.table-bordered > tbody > tr > td {
+  border-color: var(--apt-border) !important;
+}
+
+pre,
+code,
+kbd,
+samp,
+.prettyprint {
+  background: var(--apt-code-bg) !important;
+  border-color: var(--apt-border) !important;
+  color: var(--apt-text) !important;
+}
+
+pre {
+  padding: 12px 14px !important;
+}
+
+pre .nocode,
+pre .pln,
+.prettyprint .pln {
+  color: var(--apt-text) !important;
+}
+
+pre .kwd,
+.prettyprint .kwd {
+  color: var(--apt-accent) !important;
+}
+
+pre .str,
+.prettyprint .str {
+  color: #5f8f83 !important;
+}
+
+pre .lit,
+.prettyprint .lit {
+  color: #9a7a00 !important;
+}
+
+blockquote {
+  background: var(--apt-soft) !important;
+  border-left-color: var(--apt-pink) !important;
+  color: var(--apt-muted) !important;
+}
+
+.btn,
+.btn-default {
+  background: #fff !important;
+  border-color: var(--apt-border) !important;
+  color: var(--apt-text) !important;
+}
+
+.btn:hover,
+.btn:focus,
+.btn-default:hover,
+.btn-default:focus {
+  background: var(--apt-soft) !important;
+  border-color: #c9b5dc !important;
+  color: var(--apt-text) !important;
+}
+
+.form-control,
+input,
+select,
+textarea {
+  border-color: var(--apt-border) !important;
+}
+
+.form-control:focus,
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--apt-pink) !important;
+  box-shadow: 0 0 0 2px rgba(255, 184, 209, 0.28) !important;
+}
+
+.alert-info {
+  background: #f4fbf8 !important;
+  border-color: #cdeee0 !important;
+  color: #3b665d !important;
+}
+
+.alert-warning {
+  background: #fffdf0 !important;
+  border-color: #eee48a !important;
+  color: #6f5b13 !important;
+}
+
+.alert-danger {
+  background: #fff4f8 !important;
+  border-color: #f3b8cb !important;
+  color: #7f415e !important;
+}
+
+#scroll-page-top {
+  background: rgba(90, 84, 117, 0.72) !important;
+  color: #fff !important;
+}
