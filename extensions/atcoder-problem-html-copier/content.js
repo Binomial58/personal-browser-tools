@@ -2,9 +2,24 @@
   "use strict";
 
   const ROOT_ID = "atcoder-problem-html-copier";
-  const BUTTON_LABEL = "問題HTMLをコピー";
+  const BUTTON_LABEL = "問題文をコピー";
   const COPIED_LABEL = "コピーしました";
   const FAILED_LABEL = "コピー失敗";
+  const UNNEEDED_SELECTORS = [
+    ".atcoder-easy-test-btn-run-case",
+    ".btn-copy",
+    ".div-btn-copy",
+    "#graph-toggle-container",
+    "script",
+    "style"
+  ];
+  const ALLOWED_ATTRIBUTES = {
+    a: ["href"],
+    img: ["alt", "height", "src", "width"],
+    ol: ["start"],
+    td: ["colspan", "rowspan"],
+    th: ["colspan", "rowspan"]
+  };
 
   function findTaskStatement() {
     return document.querySelector("#task-statement");
@@ -19,8 +34,7 @@
     );
   }
 
-  function cloneVisibleProblemHtml(statement) {
-    const clone = statement.cloneNode(true);
+  function removeHiddenLanguage(statement, clone) {
     const originalLanguageNodes = Array.from(
       statement.querySelectorAll(".lang-ja, .lang-en")
     );
@@ -36,8 +50,85 @@
         }
       });
     }
+  }
+
+  function getTexAnnotation(element) {
+    const annotation = element.querySelector(
+      'annotation[encoding="application/x-tex"]'
+    );
+
+    return annotation ? annotation.textContent.trim() : "";
+  }
+
+  function replaceMathWithTex(clone) {
+    clone.querySelectorAll("var").forEach((element) => {
+      const tex = Array.from(
+        element.querySelectorAll('annotation[encoding="application/x-tex"]')
+      )
+        .map((annotation) => annotation.textContent.trim())
+        .filter(Boolean)
+        .join(" ");
+
+      if (!tex) {
+        return;
+      }
+
+      element.replaceChildren(document.createTextNode(tex));
+    });
+
+    clone.querySelectorAll(".katex").forEach((element) => {
+      const tex = getTexAnnotation(element);
+      element.replaceWith(document.createTextNode(tex || element.textContent));
+    });
+  }
+
+  function removeUnneededElements(clone) {
+    clone.querySelectorAll(UNNEEDED_SELECTORS.join(",")).forEach((element) => {
+      element.remove();
+    });
+  }
+
+  function unwrapElement(element) {
+    while (element.firstChild) {
+      element.parentNode.insertBefore(element.firstChild, element);
+    }
+
+    element.remove();
+  }
+
+  function removeUnneededAttributes(element) {
+    const allowedAttributes =
+      ALLOWED_ATTRIBUTES[element.tagName.toLowerCase()] || [];
+
+    for (const attribute of Array.from(element.attributes)) {
+      if (!allowedAttributes.includes(attribute.name)) {
+        element.removeAttribute(attribute.name);
+      }
+    }
+  }
+
+  function simplifyHtml(clone) {
+    replaceMathWithTex(clone);
+    clone.querySelectorAll("span").forEach(unwrapElement);
+
+    removeUnneededAttributes(clone);
+    clone.querySelectorAll("*").forEach(removeUnneededAttributes);
+  }
+
+  function cloneVisibleProblemHtml(statement) {
+    const clone = statement.cloneNode(true);
+
+    removeHiddenLanguage(statement, clone);
+    removeUnneededElements(clone);
+    simplifyHtml(clone);
 
     return clone.outerHTML;
+  }
+
+  function findProblemTitle(statement) {
+    const main = statement.closest("#main-div") || document;
+
+    return main.querySelector(".row > div > .h2, .h2, h2");
   }
 
   async function copyText(text) {
@@ -81,7 +172,7 @@
   }
 
   function createToolbar(statement) {
-    const toolbar = document.createElement("div");
+    const toolbar = document.createElement("span");
     toolbar.id = ROOT_ID;
     toolbar.className = "atcoder-problem-html-copier";
 
@@ -105,6 +196,21 @@
     return toolbar;
   }
 
+  function placeToolbar(toolbar, statement) {
+    const title = findProblemTitle(statement);
+
+    if (title) {
+      toolbar.classList.add("atcoder-problem-html-copier--title");
+      toolbar.classList.remove("atcoder-problem-html-copier--statement");
+      title.appendChild(toolbar);
+      return;
+    }
+
+    toolbar.classList.add("atcoder-problem-html-copier--statement");
+    toolbar.classList.remove("atcoder-problem-html-copier--title");
+    statement.parentElement.insertBefore(toolbar, statement);
+  }
+
   function inject() {
     if (document.getElementById(ROOT_ID)) {
       return true;
@@ -115,7 +221,8 @@
       return false;
     }
 
-    statement.parentElement.insertBefore(createToolbar(statement), statement);
+    const toolbar = createToolbar(statement);
+    placeToolbar(toolbar, statement);
     return true;
   }
 

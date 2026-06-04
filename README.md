@@ -1,29 +1,13 @@
-# AtCoder Problem HTML Copier
+# Personal Browser Tools
 
-AtCoder の問題ページに、問題文 HTML をコピーするボタンを追加するブラウザ拡張機能です。
+個人用のブラウザ拡張機能をまとめるリポジトリです。
 
-## 機能
+## Extensions
 
-- `https://atcoder.jp/contests/*/tasks/*` の問題ページで動作します。
-- 問題本文の直前に `問題HTMLをコピー` ボタンを表示します。
-- クリックすると、表示中の言語だけを残した `#task-statement` の HTML をクリップボードにコピーします。
-- 新旧 AtCoder コンテスト用に `*.contest.atcoder.jp/tasks/*` にも対応しています。
+- [AtCoder Problem HTML Copier](extensions/atcoder-problem-html-copier/)
+- [AtCoder Sample Downloader](extensions/atcoder-sample-downloader/)
 
-## インストール
+## 構成
 
-### Chrome / Edge
-
-1. `chrome://extensions` または `edge://extensions` を開きます。
-2. デベロッパーモードを有効にします。
-3. `パッケージ化されていない拡張機能を読み込む` を押します。
-4. このリポジトリのディレクトリを選択します。
-
-### Firefox
-
-1. `about:debugging#/runtime/this-firefox` を開きます。
-2. `一時的なアドオンを読み込む` を押します。
-3. このリポジトリ内の `manifest.json` を選択します。
-
-## 使い方
-
-AtCoder の問題ページを開き、問題文の上に表示される `問題HTMLをコピー` ボタンを押します。
+各拡張機能は `extensions/<extension-name>/` に配置します。
+ブラウザで読み込むときは、対象拡張機能の `manifest.json` が入っているフォルダーを指定します。
