@@ -2,7 +2,10 @@
   "use strict";
 
   const ROOT_ID = "atcoder-contest-progress";
-  const MAX_SUBMISSION_PAGES = 10;
+  const MAX_SUBMISSION_PAGES = 3;
+  const STATUS_CACHE_TTL_MS = 60 * 1000;
+  const STATUS_COOLDOWN_MS = 3 * 60 * 1000;
+  const STORAGE_PREFIX = "atcoder-contest-progress";
   const STATUS_PRIORITY = {
     AC: 3
   };
@@ -49,10 +52,130 @@
     });
 
     if (!response.ok) {
-      throw new Error(`GET ${url} failed: ${response.status}`);
+      const error = new Error(`GET ${url} failed: ${response.status}`);
+      error.status = response.status;
+      error.url = url;
+      throw error;
     }
 
     return parseDocument(await response.text());
+  }
+
+  function createStorageKey(context, name) {
+    return `${STORAGE_PREFIX}:${context.contest}:${name}`;
+  }
+
+  function readStoredJson(key) {
+    try {
+      const value = localStorage.getItem(key);
+      return value ? JSON.parse(value) : null;
+    } catch (_error) {
+      return null;
+    }
+  }
+
+  function writeStoredJson(key, value) {
+    try {
+      localStorage.setItem(key, JSON.stringify(value));
+    } catch (_error) {
+      // Ignore storage failures. The extension still works without caching.
+    }
+  }
+
+  function readStoredNumber(key) {
+    try {
+      return Number(localStorage.getItem(key)) || 0;
+    } catch (_error) {
+      return 0;
+    }
+  }
+
+  function writeStoredNumber(key, value) {
+    try {
+      localStorage.setItem(key, String(value));
+    } catch (_error) {
+      // Ignore storage failures. The extension still works without cooldowns.
+    }
+  }
+
+  function readStatusCache(context) {
+    const data = readStoredJson(createStorageKey(context, "statuses"));
+
+    if (!data || !Array.isArray(data.statuses)) {
+      return {
+        savedAt: 0,
+        statuses: new Map()
+      };
+    }
+
+    const statuses = new Map();
+    data.statuses.forEach((entry) => {
+      if (
+        Array.isArray(entry) &&
+        typeof entry[0] === "string" &&
+        typeof entry[1] === "string"
+      ) {
+        statuses.set(entry[0], entry[1]);
+      }
+    });
+
+    return {
+      savedAt: Number(data.savedAt) || 0,
+      statuses
+    };
+  }
+
+  function writeStatusCache(context, statuses) {
+    writeStoredJson(createStorageKey(context, "statuses"), {
+      savedAt: Date.now(),
+      statuses: Array.from(statuses.entries())
+    });
+  }
+
+  function isFreshStatusCache(cache) {
+    return cache.savedAt > 0 && Date.now() - cache.savedAt < STATUS_CACHE_TTL_MS;
+  }
+
+  function getCooldownKey() {
+    return `${STORAGE_PREFIX}:submissions-cooldown-until`;
+  }
+
+  function readCooldownUntil() {
+    return readStoredNumber(getCooldownKey());
+  }
+
+  function startCooldown() {
+    const cooldownUntil = Date.now() + STATUS_COOLDOWN_MS;
+    writeStoredNumber(getCooldownKey(), cooldownUntil);
+    return cooldownUntil;
+  }
+
+  function formatDuration(ms) {
+    const seconds = Math.max(1, Math.ceil(ms / 1000));
+
+    if (seconds < 60) {
+      return `${seconds}秒`;
+    }
+
+    return `約${Math.ceil(seconds / 60)}分`;
+  }
+
+  function createCooldownWarning(cooldownUntil, hasCache) {
+    const wait = formatDuration(cooldownUntil - Date.now());
+    const cacheText = hasCache ? "キャッシュを表示しています" : "提出状況は未取得です";
+    return `AtCoderの制限により取得を一時停止中（${wait}）。${cacheText}`;
+  }
+
+  function isRateLimitError(error) {
+    return error && error.status === 429;
+  }
+
+  function logFetchWarning(error) {
+    if (isRateLimitError(error)) {
+      return;
+    }
+
+    console.warn("[AtCoder Contest Progress]", error);
   }
 
   function normalizeText(text) {
@@ -163,6 +286,20 @@
     return nextPriority > currentPriority;
   }
 
+  function mergeStatuses(baseStatuses, nextStatuses) {
+    const merged = new Map(baseStatuses);
+
+    nextStatuses.forEach((nextStatus, taskId) => {
+      const currentStatus = merged.get(taskId) || "";
+
+      if (shouldReplaceStatus(currentStatus, nextStatus)) {
+        merged.set(taskId, nextStatus);
+      }
+    });
+
+    return merged;
+  }
+
   function parseSubmissionStatuses(doc, context, statuses) {
     Array.from(doc.querySelectorAll("table tbody tr")).forEach((row) => {
       const taskLink = Array.from(row.querySelectorAll("a")).find((link) => {
@@ -249,7 +386,9 @@
     root
       .querySelector(".atcoder-contest-progress__refresh")
       .addEventListener("click", () => {
-        renderProgress(root, context);
+        renderProgress(root, context, {
+          force: true
+        });
       });
 
     return root;
@@ -299,7 +438,7 @@
     body.replaceChildren(...taskElements);
   }
 
-  async function renderProgress(root, context) {
+  async function renderProgress(root, context, options = {}) {
     const body = root.querySelector(".atcoder-contest-progress__body");
     const refresh = root.querySelector(".atcoder-contest-progress__refresh");
 
@@ -309,20 +448,48 @@
     try {
       const tasksDoc = await fetchDocument(`${context.rootUrl}/tasks`);
       const tasks = parseTasks(tasksDoc, context);
-      let statuses = new Map();
+      const cached = readStatusCache(context);
+      let statuses = cached.statuses;
       let warning = "";
 
-      try {
-        statuses = await fetchSubmissionStatuses(context, tasks);
-      } catch (error) {
-        console.error("[AtCoder Contest Progress]", error);
-        warning = "提出状況を取得できませんでした";
+      if (!options.force && isFreshStatusCache(cached)) {
+        renderTasks(root, context, tasks, statuses, warning);
+        return;
+      }
+
+      const cooldownUntil = readCooldownUntil();
+
+      if (cooldownUntil > Date.now()) {
+        warning = createCooldownWarning(cooldownUntil, statuses.size > 0);
+      } else {
+        try {
+          const fetchedStatuses = await fetchSubmissionStatuses(context, tasks);
+          statuses = mergeStatuses(statuses, fetchedStatuses);
+          writeStatusCache(context, statuses);
+        } catch (error) {
+          if (isRateLimitError(error)) {
+            const nextCooldownUntil = startCooldown();
+            warning = createCooldownWarning(nextCooldownUntil, statuses.size > 0);
+          } else {
+            logFetchWarning(error);
+            warning = statuses.size > 0
+              ? "提出状況を取得できませんでした。キャッシュを表示しています"
+              : "提出状況を取得できませんでした";
+          }
+        }
       }
 
       renderTasks(root, context, tasks, statuses, warning);
     } catch (error) {
-      console.error("[AtCoder Contest Progress]", error);
-      body.textContent = "提出状況を取得できませんでした";
+      logFetchWarning(error);
+
+      if (isRateLimitError(error)) {
+        startCooldown();
+      }
+
+      body.textContent = isRateLimitError(error)
+        ? "AtCoderの制限により取得を一時停止中です"
+        : "提出状況を取得できませんでした";
     } finally {
       refresh.disabled = false;
     }

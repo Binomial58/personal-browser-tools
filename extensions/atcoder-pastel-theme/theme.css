@@ -40,8 +40,64 @@ body {
 .navbar a:hover,
 .navbar .navbar-nav > li > a:hover,
 .navbar .navbar-nav > .active > a {
+  background-color: var(--apt-purple) !important;
+  color: var(--apt-yellow) !important;
+}
+
+.navbar .navbar-brand,
+.navbar .navbar-brand:hover,
+.navbar .navbar-brand:focus,
+.navbar .navbar-header > a,
+.navbar .navbar-header > a:hover,
+.navbar .navbar-header > a:focus {
+  background-color: transparent !important;
+  color: #fffaff !important;
+}
+
+.navbar .navbar-brand img,
+.navbar .navbar-header img {
+  filter: none !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.navbar .dropdown-menu {
+  background: #fff !important;
+  border-color: var(--apt-border) !important;
+}
+
+.navbar .dropdown-menu a,
+.navbar .dropdown-menu > li > a,
+.navbar-inverse .navbar-nav .open .dropdown-menu > li > a,
+.navbar-default .navbar-nav .open .dropdown-menu > li > a {
+  background: #fff !important;
+  color: var(--apt-text) !important;
+}
+
+.navbar .dropdown-menu a:hover,
+.navbar .dropdown-menu a:focus,
+.navbar .dropdown-menu > li > a:hover,
+.navbar .dropdown-menu > li > a:focus,
+.navbar .dropdown-menu > .active > a,
+.navbar .dropdown-menu > .active > a:hover,
+.navbar .dropdown-menu > .active > a:focus,
+.navbar-inverse .navbar-nav .open .dropdown-menu > li > a:hover,
+.navbar-inverse .navbar-nav .open .dropdown-menu > li > a:focus,
+.navbar-default .navbar-nav .open .dropdown-menu > li > a:hover,
+.navbar-default .navbar-nav .open .dropdown-menu > li > a:focus {
   background: var(--apt-purple) !important;
   color: var(--apt-yellow) !important;
+}
+
+.navbar .dropdown-menu > .disabled > a,
+.navbar .dropdown-menu > .disabled > a:hover,
+.navbar .dropdown-menu > .disabled > a:focus {
+  background: #fff !important;
+  color: #aaa !important;
+}
+
+.navbar .dropdown-menu .divider {
+  background-color: var(--apt-border) !important;
 }
 
 a {

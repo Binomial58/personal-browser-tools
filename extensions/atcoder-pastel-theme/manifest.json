@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "AtCoder Pastel Theme",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "Applies a soft pastel color theme to AtCoder pages.",
   "content_scripts": [
     {
