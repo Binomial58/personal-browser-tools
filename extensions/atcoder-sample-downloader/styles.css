@@ -1,4 +1,22 @@
-.atcoder-sample-downloader {
+.cp-sample-downloader {
   margin-left: 6px;
+  padding: 2px 8px;
+  border: 1px solid #b9bec7;
+  border-radius: 4px;
+  background: #f7f8fa;
+  color: #2f3640;
+  font: inherit;
+  font-size: 0.8em;
+  line-height: 1.4;
   vertical-align: middle;
+  cursor: pointer;
+}
+
+.cp-sample-downloader:hover:not(:disabled) {
+  background: #eef1f5;
+}
+
+.cp-sample-downloader:disabled {
+  opacity: 0.72;
+  cursor: default;
 }

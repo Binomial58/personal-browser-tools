@@ -1,7 +1,7 @@
 (function () {
   "use strict";
 
-  const ROOT_ID = "atcoder-sample-downloader";
+  const ROOT_ID = "cp-sample-downloader";
   const BUTTON_LABEL = "Sample DL";
   const DOWNLOADED_LABEL = "Downloaded";
   const EMPTY_LABEL = "No Samples";
@@ -9,21 +9,22 @@
   const CRC32_TABLE = createCrc32Table();
   const textEncoder = new TextEncoder();
 
-  function findProblemTitle() {
-    return document.querySelector(
-      "#main-div .row > div > .h2, #main-div h2, .row > div > .h2, h2"
+  function normalizeText(text) {
+    return text.replace(/\s+/g, " ").trim();
+  }
+
+  function sanitizeFilename(name, fallbackName) {
+    return (
+      (name || fallbackName).replace(/[\\/:*?"<>|]+/g, "_").trim() ||
+      fallbackName
     );
   }
 
-  function getProblemName() {
-    const pathParts = location.pathname.split("/").filter(Boolean);
-    const fallbackName = "atcoder-samples";
-    const problemName = pathParts[pathParts.length - 1] || fallbackName;
-
-    return problemName.replace(/[\\/:*?"<>|]+/g, "_") || fallbackName;
-  }
-
   function isVisible(element) {
+    if (!(element instanceof Element)) {
+      return false;
+    }
+
     const style = window.getComputedStyle(element);
     return (
       style.display !== "none" &&
@@ -32,31 +33,28 @@
     );
   }
 
-  function normalizeText(text) {
-    return text.replace(/\s+/g, " ").trim();
+  function getElementText(element) {
+    return (element?.textContent || "")
+      .replace(/\r\n/g, "\n")
+      .replace(/\r/g, "\n");
   }
 
-  function parseSampleHeading(text) {
-    const normalizedText = normalizeText(text);
-    const patterns = [
-      { regex: /^入力例\s*(\d+)/, kind: "in" },
-      { regex: /^出力例\s*(\d+)/, kind: "out" },
-      { regex: /^Sample Input\s*(\d+)/i, kind: "in" },
-      { regex: /^Sample Output\s*(\d+)/i, kind: "out" }
-    ];
+  function getPreText(pre) {
+    const clone = pre.cloneNode(true);
+    clone
+      .querySelectorAll("button, .btn, .btn-copy, script, style")
+      .forEach((element) => element.remove());
 
-    for (const pattern of patterns) {
-      const match = normalizedText.match(pattern.regex);
+    const numberedLines = Array.from(clone.querySelectorAll("ol.linenums > li"));
 
-      if (match) {
-        return {
-          kind: pattern.kind,
-          number: Number(match[1])
-        };
-      }
+    if (numberedLines.length > 0) {
+      return `${numberedLines
+        .map((line) => line.textContent)
+        .join("\n")
+        .replace(/^\n/, "")}\n`;
     }
 
-    return null;
+    return getElementText(clone).replace(/^\n/, "");
   }
 
   function findPreAfterHeadingInContainer(heading, container) {
@@ -101,25 +99,30 @@
     return null;
   }
 
-  function getSampleText(pre) {
-    const clone = pre.cloneNode(true);
-    clone
-      .querySelectorAll("button, .btn, .btn-copy, script, style")
-      .forEach((element) => element.remove());
+  function parseAtCoderSampleHeading(text) {
+    const normalizedText = normalizeText(text);
+    const patterns = [
+      { regex: /^入力例\s*(\d+)/, kind: "in" },
+      { regex: /^出力例\s*(\d+)/, kind: "out" },
+      { regex: /^Sample Input\s*(\d+)/i, kind: "in" },
+      { regex: /^Sample Output\s*(\d+)/i, kind: "out" }
+    ];
 
-    const numberedLines = Array.from(clone.querySelectorAll("ol.linenums > li"));
+    for (const pattern of patterns) {
+      const match = normalizedText.match(pattern.regex);
 
-    if (numberedLines.length > 0) {
-      return `${numberedLines
-        .map((line) => line.textContent)
-        .join("\n")
-        .replace(/^\n/, "")}\n`;
+      if (match) {
+        return {
+          kind: pattern.kind,
+          number: Number(match[1])
+        };
+      }
     }
 
-    return clone.textContent.replace(/\r\n/g, "\n").replace(/\r/g, "\n").replace(/^\n/, "");
+    return null;
   }
 
-  function getSampleEntries() {
+  function getAtCoderSampleEntries() {
     const root = document.querySelector("#task-statement") || document;
     const entriesByName = new Map();
     const headings = Array.from(root.querySelectorAll("h2, h3, h4"));
@@ -129,7 +132,7 @@
         return;
       }
 
-      const sampleHeading = parseSampleHeading(heading.textContent);
+      const sampleHeading = parseAtCoderSampleHeading(heading.textContent);
 
       if (!sampleHeading || sampleHeading.number < 1) {
         return;
@@ -149,11 +152,96 @@
           name,
           sampleIndex,
           kind: sampleHeading.kind,
-          content: getSampleText(pre)
+          content: getPreText(pre)
         });
       }
     });
 
+    return sortEntries(entriesByName);
+  }
+
+  function getYukicoderSampleEntries() {
+    const samples = Array.from(document.querySelectorAll(".sample"));
+    const entries = [];
+
+    samples.forEach((sample, index) => {
+      let kind = null;
+
+      Array.from(sample.querySelectorAll("h6, pre")).forEach((element) => {
+        if (element.tagName === "H6") {
+          const heading = normalizeText(element.textContent);
+
+          if (/^入力$/i.test(heading) || /^Input$/i.test(heading)) {
+            kind = "in";
+          } else if (/^出力$/i.test(heading) || /^Output$/i.test(heading)) {
+            kind = "out";
+          } else {
+            kind = null;
+          }
+
+          return;
+        }
+
+        if (element.tagName === "PRE" && kind) {
+          entries.push({
+            name: `sample-${index}.${kind}`,
+            sampleIndex: index,
+            kind,
+            content: getPreText(element)
+          });
+          kind = null;
+        }
+      });
+    });
+
+    return sortEntries(new Map(entries.map((entry) => [entry.name, entry])));
+  }
+
+  function getAojSampleEntries() {
+    const root =
+      document.querySelector("#problemStatement") ||
+      document.querySelector(".description") ||
+      document.querySelector("#content") ||
+      document;
+    const entriesByName = new Map();
+    const headings = Array.from(root.querySelectorAll("h2, h3, h4"));
+
+    headings.forEach((heading) => {
+      if (!isVisible(heading)) {
+        return;
+      }
+
+      const text = normalizeText(heading.textContent);
+      const match = text.match(/^Sample (Input|Output)\s*(\d+)/i);
+
+      if (!match) {
+        return;
+      }
+
+      const pre = findSamplePre(heading);
+
+      if (!pre) {
+        return;
+      }
+
+      const sampleIndex = Number(match[2]) - 1;
+      const kind = match[1].toLowerCase() === "input" ? "in" : "out";
+      const name = `sample-${sampleIndex}.${kind}`;
+
+      if (!entriesByName.has(name)) {
+        entriesByName.set(name, {
+          name,
+          sampleIndex,
+          kind,
+          content: getPreText(pre)
+        });
+      }
+    });
+
+    return sortEntries(entriesByName);
+  }
+
+  function sortEntries(entriesByName) {
     return Array.from(entriesByName.values())
       .sort((left, right) => {
         if (left.sampleIndex !== right.sampleIndex) {
@@ -162,12 +250,84 @@
 
         return left.kind === "in" ? -1 : 1;
       })
-      .map((entry) => {
-        return {
-          name: entry.name,
-          content: entry.content
-        };
-      });
+      .map((entry) => ({
+        name: entry.name,
+        content: entry.content
+      }));
+  }
+
+  const SITE_CONFIGS = [
+    {
+      name: "atcoder",
+      matches: () =>
+        /(^|\.)atcoder\.jp$/.test(location.hostname) &&
+        /\/tasks\//.test(location.pathname),
+      findTitle: () =>
+        document.querySelector(
+          "#main-div .row > div > .h2, #main-div h2, .row > div > .h2, h2"
+        ),
+      getProblemName: () => {
+        const pathParts = location.pathname.split("/").filter(Boolean);
+        return sanitizeFilename(
+          pathParts[pathParts.length - 1],
+          "atcoder-samples"
+        );
+      },
+      getSampleEntries: getAtCoderSampleEntries
+    },
+    {
+      name: "aoj",
+      matches: () =>
+        /(^|\.)(onlinejudge|judge)\.u-aizu\.ac\.jp$/.test(location.hostname) &&
+        (/\/problems\//.test(location.pathname) ||
+          /description\.jsp/.test(location.pathname)),
+      findTitle: () =>
+        document.querySelector(
+          "#problemTitle, h1.title, .problem-title, main h1, #content h1"
+        ),
+      getProblemName: () => {
+        const pageTitle = normalizeText(
+          getElementText(
+            document.querySelector("#problemTitle, h1.title, .problem-title")
+          )
+        );
+
+        if (pageTitle) {
+          return sanitizeFilename(pageTitle, "aoj-samples");
+        }
+
+        const pathParts = location.pathname.split("/").filter(Boolean);
+        return sanitizeFilename(pathParts[pathParts.length - 1], "aoj-samples");
+      },
+      getSampleEntries: getAojSampleEntries
+    },
+    {
+      name: "yukicoder",
+      matches: () =>
+        /(^|\.)yukicoder\.me$/.test(location.hostname) &&
+        /\/problems\//.test(location.pathname),
+      findTitle: () => document.querySelector("#content > h3, #content h3"),
+      getProblemName: () => {
+        const pageTitle = normalizeText(
+          getElementText(document.querySelector("#content > h3, #content h3"))
+        );
+
+        if (pageTitle) {
+          return sanitizeFilename(pageTitle, "yukicoder-samples");
+        }
+
+        const pathParts = location.pathname.split("/").filter(Boolean);
+        return sanitizeFilename(
+          pathParts.slice(-2).join("-"),
+          "yukicoder-samples"
+        );
+      },
+      getSampleEntries: getYukicoderSampleEntries
+    }
+  ];
+
+  function getSiteConfig() {
+    return SITE_CONFIGS.find((config) => config.matches()) || null;
   }
 
   function createCrc32Table() {
@@ -297,27 +457,27 @@
     }, 1200);
   }
 
-  function createButton() {
+  function createButton(siteConfig) {
     const button = document.createElement("button");
     button.id = ROOT_ID;
     button.type = "button";
-    button.className = "btn btn-default btn-sm atcoder-sample-downloader";
+    button.className = "cp-sample-downloader";
     button.textContent = BUTTON_LABEL;
     button.addEventListener("click", () => {
       button.disabled = true;
 
       try {
-        const entries = getSampleEntries();
+        const entries = siteConfig.getSampleEntries();
 
         if (entries.length === 0) {
           setTemporaryLabel(button, EMPTY_LABEL);
           return;
         }
 
-        downloadBlob(createZip(entries), `${getProblemName()}.zip`);
+        downloadBlob(createZip(entries), `${siteConfig.getProblemName()}.zip`);
         setTemporaryLabel(button, DOWNLOADED_LABEL);
       } catch (error) {
-        console.error("[AtCoder Sample Downloader]", error);
+        console.error("[CP Sample Downloader]", siteConfig.name, error);
         setTemporaryLabel(button, FAILED_LABEL);
       }
     });
@@ -325,24 +485,30 @@
     return button;
   }
 
-  function inject() {
+  function inject(siteConfig) {
     if (document.getElementById(ROOT_ID)) {
       return true;
     }
 
-    const title = findProblemTitle();
+    const title = siteConfig.findTitle();
 
     if (!title) {
       return false;
     }
 
-    title.appendChild(createButton());
+    title.appendChild(createButton(siteConfig));
     return true;
   }
 
-  if (!inject()) {
+  const siteConfig = getSiteConfig();
+
+  if (!siteConfig) {
+    return;
+  }
+
+  if (!inject(siteConfig)) {
     const observer = new MutationObserver(() => {
-      if (inject()) {
+      if (inject(siteConfig)) {
         observer.disconnect();
       }
     });
@@ -352,6 +518,6 @@
       subtree: true
     });
 
-    window.setTimeout(() => observer.disconnect(), 10000);
+    window.setTimeout(() => observer.disconnect(), 15000);
   }
 })();
