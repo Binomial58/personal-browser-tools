@@ -273,6 +273,7 @@
           "atcoder-samples"
         );
       },
+      buttonClassName: "btn btn-default btn-sm cp-sample-downloader-atcoder",
       getSampleEntries: getAtCoderSampleEntries
     },
     {
@@ -461,7 +462,7 @@
     const button = document.createElement("button");
     button.id = ROOT_ID;
     button.type = "button";
-    button.className = "cp-sample-downloader";
+    button.className = siteConfig.buttonClassName || "cp-sample-downloader";
     button.textContent = BUTTON_LABEL;
     button.addEventListener("click", () => {
       button.disabled = true;

@@ -20,3 +20,8 @@
   opacity: 0.72;
   cursor: default;
 }
+
+.cp-sample-downloader-atcoder {
+  margin-left: 6px;
+  vertical-align: middle;
+}
