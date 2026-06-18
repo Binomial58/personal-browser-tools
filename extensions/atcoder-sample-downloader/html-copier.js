@@ -26,6 +26,17 @@
     td: ["colspan", "rowspan"],
     th: ["colspan", "rowspan"]
   };
+  const EDITORIAL_CONTENT_SELECTOR = [
+    "p",
+    "pre",
+    "table",
+    "blockquote",
+    "details",
+    "code",
+    "math",
+    ".katex",
+    "img:not(.user-rating-stage-s):not(.user-rating-stage-m):not(.user-rating-stage-l)"
+  ].join(",");
 
   function isAtCoderPage() {
     return /(^|\.)atcoder\.jp$/.test(location.hostname);
@@ -117,6 +128,40 @@
     });
   }
 
+  function hasMeaningfulHtmlContent(element) {
+    return (
+      normalizeText(element.textContent).length > 0 ||
+      Boolean(element.querySelector("img, pre, table, math, .katex"))
+    );
+  }
+
+  function removeEmptyElements(container) {
+    Array.from(container.querySelectorAll("div, section, article, ul, ol, li, p"))
+      .reverse()
+      .forEach((element) => {
+        if (!hasMeaningfulHtmlContent(element)) {
+          element.remove();
+        }
+      });
+  }
+
+  function isIgnorableEdgeNode(node) {
+    return (
+      (node.nodeType === Node.TEXT_NODE && !node.textContent.trim()) ||
+      (node.nodeType === Node.ELEMENT_NODE && node.matches("br"))
+    );
+  }
+
+  function removeEdgeBreaks(container) {
+    while (container.firstChild && isIgnorableEdgeNode(container.firstChild)) {
+      container.firstChild.remove();
+    }
+
+    while (container.lastChild && isIgnorableEdgeNode(container.lastChild)) {
+      container.lastChild.remove();
+    }
+  }
+
   function unwrapElement(element) {
     while (element.firstChild) {
       element.parentNode.insertBefore(element.firstChild, element);
@@ -163,6 +208,8 @@
 
     removeUnneededElements(wrapper);
     simplifyHtml(wrapper);
+    removeEmptyElements(wrapper);
+    removeEdgeBreaks(wrapper);
 
     return wrapper.innerHTML.trim();
   }
@@ -400,11 +447,17 @@
 
     removeUnneededElements(wrapper);
 
-    const contentElement = wrapper.querySelector(
-      "p, pre, table, blockquote, details, img, .katex"
-    );
+    const contentElement = wrapper.querySelector(EDITORIAL_CONTENT_SELECTOR);
 
-    return Boolean(contentElement) && normalizeText(wrapper.textContent).length > 20;
+    if (!contentElement) {
+      return false;
+    }
+
+    if (contentElement.matches("img")) {
+      return true;
+    }
+
+    return normalizeText(wrapper.textContent).length > 20;
   }
 
   function findExpandedEditorialArticles() {
