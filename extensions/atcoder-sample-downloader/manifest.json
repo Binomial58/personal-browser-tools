@@ -1,12 +1,15 @@
 {
   "manifest_version": 3,
   "name": "CP Sample Downloader",
-  "version": "0.1.0",
-  "description": "Adds a button to AtCoder, AOJ, and yukicoder problem pages for downloading sample inputs and outputs as a ZIP file.",
+  "version": "0.2.0",
+  "description": "Adds sample download and AtCoder HTML copy buttons for problem and editorial pages.",
+  "permissions": ["clipboardWrite"],
   "content_scripts": [
     {
       "matches": [
         "https://atcoder.jp/contests/*/tasks/*",
+        "https://atcoder.jp/contests/*/editorial",
+        "https://atcoder.jp/contests/*/editorial/*",
         "https://*.contest.atcoder.jp/tasks/*",
         "http://*.contest.atcoder.jp/tasks/*",
         "https://onlinejudge.u-aizu.ac.jp/problems/*",
@@ -14,7 +17,7 @@
         "http://judge.u-aizu.ac.jp/onlinejudge/description.jsp*",
         "https://yukicoder.me/problems/*"
       ],
-      "js": ["content.js"],
+      "js": ["content.js", "html-copier.js"],
       "css": ["styles.css"],
       "run_at": "document_idle"
     }

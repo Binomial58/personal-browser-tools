@@ -27,6 +27,10 @@
     th: ["colspan", "rowspan"]
   };
 
+  function isAtCoderPage() {
+    return /(^|\.)atcoder\.jp$/.test(location.hostname);
+  }
+
   function findTaskStatement() {
     return document.querySelector("#task-statement");
   }
@@ -224,7 +228,7 @@
         await copyText(getHtml());
         setTemporaryLabel(button, COPIED_LABEL, label);
       } catch (error) {
-        console.error("[AtCoder Problem HTML Copier]", error);
+        console.error("[AtCoder HTML Copier]", error);
         setTemporaryLabel(button, FAILED_LABEL, label);
       }
     });
@@ -480,6 +484,10 @@
     const editorialInjected = injectEditorialArticles();
 
     return problemInjected || editorialInjected;
+  }
+
+  if (!isAtCoderPage()) {
+    return;
   }
 
   const injectedImmediately = inject();

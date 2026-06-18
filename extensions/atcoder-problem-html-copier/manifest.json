@@ -1,13 +1,15 @@
 {
   "manifest_version": 3,
   "name": "AtCoder Problem HTML Copier",
-  "version": "0.1.0",
-  "description": "Adds a button to AtCoder task pages for copying the problem statement HTML.",
+  "version": "0.2.0",
+  "description": "Adds buttons to AtCoder task and editorial pages for copying problem or editorial HTML.",
   "permissions": ["clipboardWrite"],
   "content_scripts": [
     {
       "matches": [
         "https://atcoder.jp/contests/*/tasks/*",
+        "https://atcoder.jp/contests/*/editorial",
+        "https://atcoder.jp/contests/*/editorial/*",
         "https://*.contest.atcoder.jp/tasks/*",
         "http://*.contest.atcoder.jp/tasks/*"
       ],

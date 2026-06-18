@@ -261,7 +261,8 @@
       name: "atcoder",
       matches: () =>
         /(^|\.)atcoder\.jp$/.test(location.hostname) &&
-        /\/tasks\//.test(location.pathname),
+        (/^\/contests\/[^/]+\/tasks\/[^/]+\/?$/.test(location.pathname) ||
+          /^\/tasks\/[^/]+\/?$/.test(location.pathname)),
       findTitle: () =>
         document.querySelector(
           "#main-div .row > div > .h2, #main-div h2, .row > div > .h2, h2"
