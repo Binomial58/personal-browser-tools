@@ -8,6 +8,7 @@
     {
       "matches": [
         "https://atcoder.jp/contests/*/tasks/*",
+        "https://atcoder.jp/contests/*/tasks_print*",
         "https://atcoder.jp/contests/*/editorial",
         "https://atcoder.jp/contests/*/editorial/*",
         "https://*.contest.atcoder.jp/tasks/*",

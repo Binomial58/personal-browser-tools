@@ -5,6 +5,7 @@
   const TOOLBAR_CLASS = "atcoder-problem-html-copier";
   const INJECTED_ATTRIBUTE = "data-atcoder-html-copier-injected";
   const PROBLEM_BUTTON_LABEL = "問題文をコピー";
+  const PRINT_PROBLEM_BUTTON_LABEL = "全問題文をコピー";
   const EDITORIAL_BUTTON_LABEL = "解説HTMLをコピー";
   const COPIED_LABEL = "コピーしました";
   const FAILED_LABEL = "コピー失敗";
@@ -42,8 +43,12 @@
     return /(^|\.)atcoder\.jp$/.test(location.hostname);
   }
 
-  function findTaskStatement() {
-    return document.querySelector("#task-statement");
+  function findTaskStatements() {
+    return Array.from(document.querySelectorAll("#task-statement"));
+  }
+
+  function isAtCoderTasksPrintPage() {
+    return /^\/contests\/[^/]+\/tasks_print\/?$/.test(location.pathname);
   }
 
   function isAtCoderEditorialPage() {
@@ -214,8 +219,69 @@
     return wrapper.innerHTML.trim();
   }
 
+  function getCleanProblemTitleText(title) {
+    const clone = title.cloneNode(true);
+
+    removeUnneededElements(clone);
+
+    return normalizeText(clone.textContent);
+  }
+
+  function cloneAllProblemStatementsHtml(statements) {
+    const wrapper = document.createElement("div");
+
+    statements.forEach((statement) => {
+      const section = document.createElement("section");
+      const title = findProblemTitle(statement);
+
+      if (title) {
+        const heading = document.createElement("h2");
+        heading.textContent = getCleanProblemTitleText(title);
+        section.appendChild(heading);
+      }
+
+      const statementClone = statement.cloneNode(true);
+      removeHiddenLanguage(statement, statementClone);
+      section.appendChild(statementClone);
+      wrapper.appendChild(section);
+    });
+
+    removeUnneededElements(wrapper);
+    simplifyHtml(wrapper);
+    removeEmptyElements(wrapper);
+    removeEdgeBreaks(wrapper);
+
+    return wrapper.innerHTML.trim();
+  }
+
+  function findPreviousProblemTitle(statement) {
+    for (
+      let element = statement.previousElementSibling;
+      element;
+      element = element.previousElementSibling
+    ) {
+      if (element.matches(".h2, h2")) {
+        return element;
+      }
+
+      const title = element.querySelector(".h2, h2");
+      if (title) {
+        return title;
+      }
+    }
+
+    return null;
+  }
+
   function findProblemTitle(statement) {
-    const main = statement.closest("#main-div") || document;
+    const previousTitle = findPreviousProblemTitle(statement);
+
+    if (previousTitle) {
+      return previousTitle;
+    }
+
+    const main =
+      statement.closest("#main-div") || statement.parentElement || document;
 
     return main.querySelector(".row > div > .h2, .h2, h2");
   }
@@ -299,22 +365,62 @@
     statement.parentElement.insertBefore(toolbar, statement);
   }
 
-  function injectProblemStatement() {
-    if (document.getElementById(PROBLEM_ROOT_ID)) {
-      return true;
+  function injectProblemStatement(statement, index) {
+    if (!statement || !statement.parentElement) {
+      return false;
     }
 
-    const statement = findTaskStatement();
-    if (!statement || !statement.parentElement) {
+    if (statement.hasAttribute(INJECTED_ATTRIBUTE)) {
       return false;
     }
 
     const toolbar = createToolbar(PROBLEM_BUTTON_LABEL, () =>
       cloneVisibleHtml(statement)
     );
-    toolbar.id = PROBLEM_ROOT_ID;
+    toolbar.id =
+      index === 0 ? PROBLEM_ROOT_ID : `${PROBLEM_ROOT_ID}-${index + 1}`;
     placeToolbar(toolbar, statement);
+    statement.setAttribute(INJECTED_ATTRIBUTE, "true");
     return true;
+  }
+
+  function injectPrintProblemStatements(statements) {
+    if (document.getElementById(PROBLEM_ROOT_ID)) {
+      return true;
+    }
+
+    const firstStatement = statements[0];
+    if (!firstStatement || !firstStatement.parentElement) {
+      return false;
+    }
+
+    const toolbar = createToolbar(PRINT_PROBLEM_BUTTON_LABEL, () =>
+      cloneAllProblemStatementsHtml(findTaskStatements())
+    );
+    toolbar.id = PROBLEM_ROOT_ID;
+    placeToolbar(toolbar, firstStatement);
+
+    statements.forEach((statement) => {
+      statement.setAttribute(INJECTED_ATTRIBUTE, "true");
+    });
+
+    return true;
+  }
+
+  function injectProblemStatements() {
+    const statements = findTaskStatements();
+
+    if (isAtCoderTasksPrintPage()) {
+      return injectPrintProblemStatements(statements);
+    }
+
+    let injected = false;
+
+    statements.forEach((statement, index) => {
+      injected = injectProblemStatement(statement, index) || injected;
+    });
+
+    return injected;
   }
 
   function findIndividualEditorialArticle() {
@@ -533,7 +639,7 @@
   }
 
   function inject() {
-    const problemInjected = injectProblemStatement();
+    const problemInjected = injectProblemStatements();
     const editorialInjected = injectEditorialArticles();
 
     return problemInjected || editorialInjected;
