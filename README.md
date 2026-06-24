@@ -8,6 +8,7 @@
 - [CP Sample Downloader](extensions/atcoder-sample-downloader/)
 - [AtCoder Pastel Theme](extensions/atcoder-pastel-theme/)
 - [AtCoder Contest Progress](extensions/atcoder-contest-progress/)
+- [AtCoder Favorite Standings](extensions/atcoder-user-ac-notifier/)
 
 ## 構成
 

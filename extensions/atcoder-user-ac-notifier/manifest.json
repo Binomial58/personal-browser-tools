@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "AtCoder Favorite Standings",
+  "version": "0.1.0",
+  "description": "Show a filtered standings table for favorite users on AtCoder task pages.",
+  "permissions": ["storage", "notifications"],
+  "host_permissions": ["https://atcoder.jp/*", "https://*.contest.atcoder.jp/*"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://atcoder.jp/contests/*/tasks/*",
+        "https://*.contest.atcoder.jp/tasks/*",
+        "http://*.contest.atcoder.jp/tasks/*"
+      ],
+      "js": ["content.js"],
+      "css": ["styles.css"],
+      "run_at": "document_idle"
+    }
+  ]
+}
