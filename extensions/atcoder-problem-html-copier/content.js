@@ -4,6 +4,8 @@
   const PROBLEM_ROOT_ID = "atcoder-problem-html-copier";
   const TOOLBAR_CLASS = "atcoder-problem-html-copier";
   const INJECTED_ATTRIBUTE = "data-atcoder-html-copier-injected";
+  const SCOPE_ATTRIBUTE = "data-atcoder-html-copier-scope";
+  const ALL_PROBLEMS_SCOPE = "all-problems";
   const PROBLEM_BUTTON_LABEL = "問題文をコピー";
   const PRINT_PROBLEM_BUTTON_LABEL = "全問題文をコピー";
   const EDITORIAL_BUTTON_LABEL = "解説HTMLをコピー";
@@ -29,7 +31,7 @@
   };
 
   function findTaskStatements() {
-    return Array.from(document.querySelectorAll("#task-statement"));
+    return Array.from(document.querySelectorAll('[id="task-statement"]'));
   }
 
   function isAtCoderTasksPrintPage() {
@@ -332,7 +334,12 @@
   }
 
   function injectPrintProblemStatements(statements) {
-    if (document.getElementById(PROBLEM_ROOT_ID)) {
+    const existingToolbar = document.getElementById(PROBLEM_ROOT_ID);
+
+    if (
+      existingToolbar &&
+      existingToolbar.getAttribute(SCOPE_ATTRIBUTE) === ALL_PROBLEMS_SCOPE
+    ) {
       return true;
     }
 
@@ -341,10 +348,15 @@
       return false;
     }
 
+    document.querySelectorAll(`.${TOOLBAR_CLASS}`).forEach((toolbar) => {
+      toolbar.remove();
+    });
+
     const toolbar = createToolbar(PRINT_PROBLEM_BUTTON_LABEL, () =>
       cloneAllProblemStatementsHtml(findTaskStatements())
     );
     toolbar.id = PROBLEM_ROOT_ID;
+    toolbar.setAttribute(SCOPE_ATTRIBUTE, ALL_PROBLEMS_SCOPE);
     placeToolbar(toolbar, firstStatement);
 
     statements.forEach((statement) => {
@@ -357,7 +369,7 @@
   function injectProblemStatements() {
     const statements = findTaskStatements();
 
-    if (isAtCoderTasksPrintPage()) {
+    if (isAtCoderTasksPrintPage() || statements.length > 1) {
       return injectPrintProblemStatements(statements);
     }
 
