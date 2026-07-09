@@ -9,6 +9,7 @@
 - [AtCoder Pastel Theme](extensions/atcoder-pastel-theme/)
 - [AtCoder Contest Progress](extensions/atcoder-contest-progress/)
 - [AtCoder Favorite Standings](extensions/atcoder-user-ac-notifier/)
+- [AtCoder Difficulty Display](extensions/atcoder-difficulty-display/)
 
 ## 構成
 

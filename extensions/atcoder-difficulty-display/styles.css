@@ -1,0 +1,69 @@
+.atcoder-difficulty-display__badge {
+  --atcoder-difficulty-color: #808080;
+  --atcoder-difficulty-fill: 100%;
+
+  display: inline-flex;
+  vertical-align: middle;
+}
+
+.atcoder-difficulty-display__circle {
+  background: linear-gradient(
+    to top,
+    var(--atcoder-difficulty-color) var(--atcoder-difficulty-fill),
+    transparent var(--atcoder-difficulty-fill)
+  );
+  border: 2px solid var(--atcoder-difficulty-color);
+  border-radius: 50%;
+  box-sizing: border-box;
+  color: var(--atcoder-difficulty-color);
+  display: inline-flex;
+  height: 13px;
+  justify-content: center;
+  line-height: 1;
+  position: relative;
+  vertical-align: middle;
+  width: 13px;
+}
+
+.atcoder-difficulty-display__badge--large .atcoder-difficulty-display__circle {
+  border-width: 3px;
+  height: 28px;
+  top: -3px;
+  width: 28px;
+}
+
+.atcoder-difficulty-display__badge--gold .atcoder-difficulty-display__circle,
+.atcoder-difficulty-display__badge--silver .atcoder-difficulty-display__circle,
+.atcoder-difficulty-display__badge--bronze .atcoder-difficulty-display__circle {
+  background: linear-gradient(
+    90deg,
+    var(--atcoder-difficulty-color),
+    #fff,
+    var(--atcoder-difficulty-color)
+  );
+}
+
+.atcoder-difficulty-display__badge--unavailable .atcoder-difficulty-display__circle {
+  align-items: center;
+  background: transparent;
+  border-style: dashed;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.atcoder-difficulty-display__badge--experimental .atcoder-difficulty-display__circle::after {
+  background: #fff;
+  border: 1px solid #b68b00;
+  border-radius: 50%;
+  color: #8a6700;
+  content: "e";
+  font-size: 9px;
+  font-weight: 700;
+  height: 12px;
+  line-height: 10px;
+  position: absolute;
+  right: -6px;
+  text-align: center;
+  top: -6px;
+  width: 12px;
+}
