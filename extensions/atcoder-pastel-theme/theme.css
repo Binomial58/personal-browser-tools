@@ -1,29 +1,43 @@
+/*
+ * Palette based on the Fairyfloss color scheme (purple / pink / mint / yellow),
+ * kept on a light background. Every interactive state only shifts brightness
+ * within the same hue (never swaps to a different color) to avoid the
+ * flickering, multi-hue look of the previous version.
+ */
 :root {
   --apt-surface: #ffffff;
-  --apt-surface-soft: #fbf9ff;
-  --apt-surface-mint: #f5fffb;
-  --apt-surface-rose: #fff7fb;
-  --apt-page: #f7f8fb;
-  --apt-code-bg: #fbf8fd;
-  --apt-code-line: #f2eef8;
-  --apt-text: #2c2939;
-  --apt-muted: #6f687d;
-  --apt-border: #e4d8ee;
-  --apt-border-strong: #c9b7dc;
-  --apt-accent: #aa4b70;
-  --apt-accent-hover: #783650;
-  --apt-primary: #5a5475;
-  --apt-primary-deep: #423d58;
-  --apt-primary-soft: #eee9f8;
-  --apt-pink: #f8b6cf;
-  --apt-mint: #bcebd9;
-  --apt-yellow: #f3e86a;
-  --apt-blue: #a9d9f1;
-  --apt-green: #5d907f;
-  --apt-orange: #b87831;
-  --apt-red: #be4f6c;
-  --apt-focus: rgba(248, 182, 207, 0.36);
-  --apt-shadow: 0 10px 28px rgba(68, 58, 90, 0.12);
+  --apt-surface-soft: #faf7fd;
+  --apt-surface-mint: #f2fdf8;
+  --apt-surface-pink: #fdf5fa;
+  --apt-page: #f7f5fb;
+  --apt-code-bg: #faf8fd;
+  --apt-code-line: #f1ecf9;
+  --apt-text: #362f4d;
+  --apt-muted: #756e8a;
+  --apt-border: #e7e1f2;
+  --apt-border-strong: #d3c5ea;
+
+  /* Fairyfloss purple: structural / primary actions */
+  --apt-purple: #6b5c94;
+  --apt-purple-deep: #4a3f6b;
+  --apt-purple-soft: #efe9fb;
+
+  /* Fairyfloss pink: links & small accents */
+  --apt-pink: #ffb8d1;
+  --apt-pink-deep: #c2417a;
+  --apt-pink-darker: #9c2f61;
+
+  /* Fairyfloss mint: calm secondary accent */
+  --apt-mint: #b9f2da;
+  --apt-mint-deep: #2f8f6c;
+
+  /* Fairyfloss yellow: sparing highlight only */
+  --apt-yellow: #ffe98a;
+  --apt-yellow-deep: #a6821c;
+
+  --apt-red: #d1567a;
+  --apt-focus: rgba(255, 184, 209, 0.4);
+  --apt-shadow: 0 6px 18px rgba(74, 63, 107, 0.1);
 }
 
 html,
@@ -32,10 +46,31 @@ body {
   color: var(--apt-text) !important;
 }
 
+* {
+  scrollbar-color: var(--apt-purple) var(--apt-purple-soft);
+}
+
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--apt-purple-soft);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--apt-purple);
+  border-radius: 999px;
+  border: 2px solid var(--apt-purple-soft);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--apt-purple-deep);
+}
+
 #main-div.float-container {
-  background:
-    linear-gradient(180deg, rgba(238, 233, 248, 0.58), rgba(247, 248, 251, 0) 260px),
-    var(--apt-page) !important;
+  background: var(--apt-page) !important;
 }
 
 #main-container,
@@ -44,23 +79,24 @@ body {
 }
 
 .float-container > #main-container {
-  border: 1px solid rgba(228, 216, 238, 0.84) !important;
-  border-top: 0 !important;
+  border: 1px solid var(--apt-border) !important;
+  border-top: 2px solid var(--apt-purple) !important;
+  border-radius: 0 0 10px 10px !important;
   box-shadow: var(--apt-shadow) !important;
 }
 
 ::selection {
-  background: rgba(248, 182, 207, 0.5) !important;
+  background: rgba(255, 184, 209, 0.45) !important;
   color: var(--apt-text) !important;
 }
 
 a {
-  color: var(--apt-accent) !important;
+  color: var(--apt-pink-deep) !important;
 }
 
 a:hover,
 a:focus {
-  color: var(--apt-accent-hover) !important;
+  color: var(--apt-pink-darker) !important;
 }
 
 button:focus,
@@ -72,9 +108,9 @@ button:focus,
 .navbar,
 .navbar-inverse,
 .navbar-default {
-  background: linear-gradient(90deg, var(--apt-primary-deep), #514a69) !important;
-  border-color: #39344a !important;
-  box-shadow: 0 2px 10px rgba(44, 41, 57, 0.18) !important;
+  background: var(--apt-purple) !important;
+  border: 0 !important;
+  box-shadow: 0 2px 10px rgba(74, 63, 107, 0.18) !important;
 }
 
 .navbar a,
@@ -85,8 +121,6 @@ button:focus,
   color: #fffaff !important;
 }
 
-.navbar a:hover,
-.navbar a:focus,
 .navbar .navbar-nav > li > a:hover,
 .navbar .navbar-nav > li > a:focus,
 .navbar .navbar-nav > .active > a,
@@ -95,8 +129,8 @@ button:focus,
 .navbar-inverse .navbar-nav > .open > a,
 .navbar-inverse .navbar-nav > .open > a:hover,
 .navbar-inverse .navbar-nav > .open > a:focus {
-  background: rgba(255, 250, 255, 0.1) !important;
-  color: var(--apt-yellow) !important;
+  background-color: var(--apt-purple-deep) !important;
+  color: #fffaff !important;
 }
 
 .navbar .navbar-brand,
@@ -107,6 +141,7 @@ button:focus,
 .navbar .navbar-header > a:focus {
   background-color: transparent !important;
   color: #fffaff !important;
+  font-weight: 700 !important;
 }
 
 .navbar .navbar-brand img,
@@ -117,12 +152,12 @@ button:focus,
 }
 
 .navbar-toggle {
-  border-color: rgba(255, 250, 255, 0.34) !important;
+  border-color: rgba(255, 250, 255, 0.4) !important;
 }
 
 .navbar-toggle:hover,
 .navbar-toggle:focus {
-  background: rgba(255, 250, 255, 0.12) !important;
+  background: var(--apt-purple-deep) !important;
 }
 
 .navbar-toggle .icon-bar {
@@ -137,8 +172,10 @@ button:focus,
 .dropdown-menu,
 .navbar .dropdown-menu {
   background: var(--apt-surface) !important;
-  border-color: var(--apt-border) !important;
-  box-shadow: 0 10px 24px rgba(68, 58, 90, 0.15) !important;
+  border: 1px solid var(--apt-border-strong) !important;
+  border-radius: 10px !important;
+  box-shadow: var(--apt-shadow) !important;
+  overflow: hidden !important;
 }
 
 .navbar .dropdown-menu a,
@@ -165,8 +202,8 @@ button:focus,
 .navbar-inverse .navbar-nav .open .dropdown-menu > li > a:focus,
 .navbar-default .navbar-nav .open .dropdown-menu > li > a:hover,
 .navbar-default .navbar-nav .open .dropdown-menu > li > a:focus {
-  background: var(--apt-primary-soft) !important;
-  color: var(--apt-accent-hover) !important;
+  background: var(--apt-purple-soft) !important;
+  color: var(--apt-purple-deep) !important;
 }
 
 .dropdown-menu > .disabled > a,
@@ -216,42 +253,45 @@ small,
 }
 
 .nav-tabs > li > a {
-  background: var(--apt-surface) !important;
-  border-color: var(--apt-border) !important;
-  color: var(--apt-accent) !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  color: var(--apt-muted) !important;
 }
 
 .nav-tabs > li > a:hover,
 .nav-tabs > li > a:focus {
-  background: var(--apt-surface-rose) !important;
-  border-color: var(--apt-border-strong) !important;
-  color: var(--apt-accent-hover) !important;
+  background: var(--apt-surface-soft) !important;
+  border: 0 !important;
+  color: var(--apt-purple-deep) !important;
 }
 
 .nav-tabs > li.active > a,
 .nav-tabs > li.active > a:focus,
 .nav-tabs > li.active > a:hover {
-  background: var(--apt-surface-soft) !important;
-  border-color: var(--apt-border) !important;
-  border-bottom-color: var(--apt-surface-soft) !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-bottom: 2px solid var(--apt-purple) !important;
   color: var(--apt-text) !important;
+  font-weight: 700 !important;
 }
 
 .nav-pills > li > a {
-  color: var(--apt-accent) !important;
+  color: var(--apt-purple) !important;
+  border-radius: 999px !important;
 }
 
 .nav-pills > li.active > a,
 .nav-pills > li.active > a:hover,
 .nav-pills > li.active > a:focus {
-  background: var(--apt-primary) !important;
+  background: var(--apt-purple) !important;
   color: #fffaff !important;
 }
 
 #contest-nav-tabs.cnvtb-fixed {
-  background: rgba(255, 255, 255, 0.94) !important;
+  background: rgba(255, 255, 255, 0.96) !important;
   border-bottom: 1px solid var(--apt-border) !important;
-  box-shadow: 0 4px 16px rgba(68, 58, 90, 0.08) !important;
+  box-shadow: 0 4px 12px rgba(74, 63, 107, 0.08) !important;
 }
 
 .panel,
@@ -267,8 +307,8 @@ small,
 .well,
 .modal-content {
   background: var(--apt-surface) !important;
-  border-radius: 6px !important;
-  box-shadow: 0 4px 14px rgba(68, 58, 90, 0.07) !important;
+  border-radius: 10px !important;
+  box-shadow: var(--apt-shadow) !important;
 }
 
 .well {
@@ -279,6 +319,7 @@ small,
 .modal-header {
   background: var(--apt-surface-soft) !important;
   border-color: var(--apt-border) !important;
+  border-radius: 10px 10px 0 0 !important;
   color: var(--apt-text) !important;
 }
 
@@ -289,7 +330,7 @@ small,
 
 .panel-primary > .panel-heading,
 .panel-info > .panel-heading {
-  background: linear-gradient(90deg, var(--apt-primary-soft), var(--apt-surface-mint)) !important;
+  background: var(--apt-purple-soft) !important;
   border-color: var(--apt-border-strong) !important;
   color: var(--apt-text) !important;
 }
@@ -307,10 +348,11 @@ small,
 .panel-title a,
 .panel-default .panel-title a {
   color: var(--apt-text) !important;
+  font-weight: 700 !important;
 }
 
 .collapse-heading:hover {
-  background: var(--apt-primary-soft) !important;
+  background: var(--apt-purple-soft) !important;
 }
 
 .table {
@@ -322,7 +364,8 @@ small,
 .table > tbody > tr > th,
 .table > tfoot > tr > th {
   background: var(--apt-surface-soft) !important;
-  color: var(--apt-text) !important;
+  color: var(--apt-purple-deep) !important;
+  font-weight: 700 !important;
 }
 
 .table > thead > tr > th,
@@ -345,35 +388,35 @@ small,
 .table-hover > tbody > tr:hover,
 .table-hover > tbody > tr:hover > td,
 .table-hover > tbody > tr:hover > th {
-  background: var(--apt-surface-rose) !important;
+  background: var(--apt-surface-pink) !important;
 }
 
 tr.active > td,
 tr.active > th,
 .table > tbody > tr.active > td,
 .table > tbody > tr.active > th {
-  background: var(--apt-primary-soft) !important;
+  background: var(--apt-purple-soft) !important;
 }
 
 tr.success > td,
 tr.success > th,
 .table > tbody > tr.success > td,
 .table > tbody > tr.success > th {
-  background: #f2fbf7 !important;
+  background: #f0faf5 !important;
 }
 
 tr.info > td,
 tr.info > th,
 .table > tbody > tr.info > td,
 .table > tbody > tr.info > th {
-  background: #f4fbff !important;
+  background: #f4f9ff !important;
 }
 
 tr.warning > td,
 tr.warning > th,
 .table > tbody > tr.warning > td,
 .table > tbody > tr.warning > th {
-  background: #fffdf0 !important;
+  background: #fffdf3 !important;
 }
 
 tr.danger > td,
@@ -390,7 +433,7 @@ tr.danger > th,
 }
 
 #task-statement .part {
-  border-bottom: 1px solid rgba(228, 216, 238, 0.7) !important;
+  border-bottom: 1px solid var(--apt-border) !important;
   padding-bottom: 18px !important;
 }
 
@@ -399,10 +442,10 @@ tr.danger > th,
 }
 
 #task-statement code {
-  background: rgba(238, 233, 248, 0.75) !important;
+  background: var(--apt-purple-soft) !important;
   border-radius: 4px !important;
-  color: var(--apt-accent-hover) !important;
-  padding: 1px 4px !important;
+  color: var(--apt-purple-deep) !important;
+  padding: 1px 5px !important;
 }
 
 #task-statement pre code {
@@ -423,7 +466,7 @@ samp,
 
 pre,
 .prettyprint {
-  border-radius: 6px !important;
+  border-radius: 8px !important;
 }
 
 pre {
@@ -431,14 +474,14 @@ pre {
 }
 
 .io-style pre {
-  background: linear-gradient(90deg, var(--apt-code-bg), var(--apt-surface-mint)) !important;
+  background: var(--apt-surface-mint) !important;
   border-left: 4px solid var(--apt-mint) !important;
 }
 
 ol.linenums,
 #task-statement .prettyprint.linenums {
   background: var(--apt-code-line) !important;
-  box-shadow: 5px 0 0 var(--apt-primary-soft) inset !important;
+  box-shadow: 5px 0 0 var(--apt-purple-soft) inset !important;
 }
 
 li.L0,
@@ -454,6 +497,7 @@ li.L9 {
   background: transparent !important;
 }
 
+/* Syntax colors follow the actual Fairyfloss token palette. */
 pre .nocode,
 pre .pln,
 .prettyprint .pln,
@@ -466,23 +510,23 @@ pre .pln,
 pre .kwd,
 .prettyprint .kwd,
 .prettyprint .tag {
-  color: var(--apt-accent) !important;
+  color: var(--apt-pink-deep) !important;
 }
 
 pre .str,
 .prettyprint .str,
 .prettyprint .atv {
-  color: var(--apt-green) !important;
+  color: var(--apt-mint-deep) !important;
 }
 
 pre .lit,
 .prettyprint .lit,
 .prettyprint .dec {
-  color: var(--apt-orange) !important;
+  color: var(--apt-purple) !important;
 }
 
 .prettyprint .com {
-  color: #8a8396 !important;
+  color: var(--apt-yellow-deep) !important;
 }
 
 .prettyprint .typ,
@@ -492,18 +536,18 @@ pre .lit,
 }
 
 .prettyprint .fun {
-  color: #8c5799 !important;
+  color: var(--apt-pink-darker) !important;
 }
 
 #editor,
 #submission-code,
 .ace_editor {
-  border: 1px solid var(--apt-border) !important;
-  border-radius: 6px !important;
+  border: 1px solid var(--apt-border-strong) !important;
+  border-radius: 8px !important;
 }
 
 .ace_gutter {
-  background: var(--apt-primary-soft) !important;
+  background: var(--apt-purple-soft) !important;
   color: var(--apt-muted) !important;
 }
 
@@ -513,7 +557,8 @@ pre .lit,
 
 blockquote {
   background: var(--apt-surface-soft) !important;
-  border-left-color: var(--apt-pink) !important;
+  border-left: 4px solid var(--apt-purple) !important;
+  border-radius: 0 8px 8px 0 !important;
   color: var(--apt-muted) !important;
 }
 
@@ -521,6 +566,7 @@ blockquote {
 .btn-default {
   background: var(--apt-surface) !important;
   border-color: var(--apt-border-strong) !important;
+  border-radius: 8px !important;
   color: var(--apt-text) !important;
 }
 
@@ -528,8 +574,8 @@ blockquote {
 .btn:focus,
 .btn-default:hover,
 .btn-default:focus {
-  background: var(--apt-primary-soft) !important;
-  border-color: var(--apt-accent) !important;
+  background: var(--apt-purple-soft) !important;
+  border-color: var(--apt-purple) !important;
   box-shadow: 0 0 0 3px var(--apt-focus) !important;
   color: var(--apt-text) !important;
 }
@@ -538,35 +584,37 @@ blockquote {
 .btn-primary:active,
 .btn-primary.active,
 .open > .dropdown-toggle.btn-primary {
-  background: var(--apt-primary) !important;
-  border-color: var(--apt-primary-deep) !important;
+  background: var(--apt-purple) !important;
+  border-color: var(--apt-purple-deep) !important;
   color: #fffaff !important;
 }
 
 .btn-primary:hover,
 .btn-primary:focus {
-  background: var(--apt-primary-deep) !important;
-  border-color: var(--apt-primary-deep) !important;
-  color: var(--apt-yellow) !important;
+  background: var(--apt-purple-deep) !important;
+  border-color: var(--apt-purple-deep) !important;
+  color: #fffaff !important;
 }
 
 .btn-success {
-  background: #5d907f !important;
-  border-color: #4c7a6b !important;
+  background: #4a9179 !important;
+  border-color: #3d7a65 !important;
+  border-radius: 8px !important;
   color: #ffffff !important;
 }
 
 .btn-success:hover,
 .btn-success:focus {
-  background: #4c7a6b !important;
-  border-color: #3f675b !important;
-  box-shadow: 0 0 0 3px rgba(188, 235, 217, 0.42) !important;
+  background: #3d7a65 !important;
+  border-color: #326654 !important;
+  box-shadow: 0 0 0 3px rgba(185, 242, 218, 0.5) !important;
   color: #ffffff !important;
 }
 
 .btn-info {
   background: #5e91ad !important;
   border-color: #4e7d98 !important;
+  border-radius: 8px !important;
   color: #ffffff !important;
 }
 
@@ -579,22 +627,24 @@ blockquote {
 }
 
 .btn-warning {
-  background: #c99743 !important;
-  border-color: #b48335 !important;
+  background: #b48335 !important;
+  border-color: #9e702a !important;
+  border-radius: 8px !important;
   color: #ffffff !important;
 }
 
 .btn-warning:hover,
 .btn-warning:focus {
-  background: #b48335 !important;
-  border-color: #9e702a !important;
-  box-shadow: 0 0 0 3px rgba(243, 232, 106, 0.34) !important;
+  background: #9e702a !important;
+  border-color: #895f22 !important;
+  box-shadow: 0 0 0 3px rgba(255, 233, 138, 0.5) !important;
   color: #ffffff !important;
 }
 
 .btn-danger {
   background: var(--apt-red) !important;
   border-color: #a9415b !important;
+  border-radius: 8px !important;
   color: #ffffff !important;
 }
 
@@ -602,7 +652,7 @@ blockquote {
 .btn-danger:focus {
   background: #a9415b !important;
   border-color: #91364e !important;
-  box-shadow: 0 0 0 3px rgba(248, 182, 207, 0.42) !important;
+  box-shadow: 0 0 0 3px rgba(255, 184, 209, 0.42) !important;
   color: #ffffff !important;
 }
 
@@ -615,12 +665,12 @@ fieldset[disabled] .btn {
 }
 
 a.btn-text {
-  color: var(--apt-accent) !important;
+  color: var(--apt-pink-deep) !important;
 }
 
 a.btn-text:hover,
 a.btn-text:focus {
-  color: var(--apt-accent-hover) !important;
+  color: var(--apt-pink-darker) !important;
 }
 
 .btn-text-group span.divider:before {
@@ -634,6 +684,7 @@ textarea,
 .select2-container--bootstrap .select2-selection {
   background: var(--apt-surface) !important;
   border-color: var(--apt-border-strong) !important;
+  border-radius: 8px !important;
   color: var(--apt-text) !important;
 }
 
@@ -649,7 +700,7 @@ textarea:focus,
 
 input[type="checkbox"],
 input[type="radio"] {
-  accent-color: var(--apt-accent) !important;
+  accent-color: var(--apt-purple) !important;
 }
 
 .input-group-addon {
@@ -670,8 +721,8 @@ input[type="radio"] {
 }
 
 .badge {
-  background: var(--apt-primary-soft) !important;
-  color: var(--apt-primary-deep) !important;
+  background: var(--apt-purple-soft) !important;
+  color: var(--apt-purple-deep) !important;
 }
 
 .label-default {
@@ -680,12 +731,12 @@ input[type="radio"] {
 }
 
 .label-primary {
-  background: var(--apt-primary) !important;
+  background: var(--apt-purple) !important;
   color: #fffaff !important;
 }
 
 .label-success {
-  background: #5d907f !important;
+  background: #4a9179 !important;
   color: #ffffff !important;
 }
 
@@ -695,7 +746,7 @@ input[type="radio"] {
 }
 
 .label-warning {
-  background: #c99743 !important;
+  background: #b48335 !important;
   color: #ffffff !important;
 }
 
@@ -705,25 +756,25 @@ input[type="radio"] {
 }
 
 .alert {
-  border-radius: 6px !important;
+  border-radius: 10px !important;
   border-color: var(--apt-border) !important;
 }
 
 .alert-success {
-  background: #f2fbf7 !important;
+  background: #f0faf5 !important;
   border-color: #cdeee0 !important;
-  color: #3e6d61 !important;
+  color: #2f6151 !important;
 }
 
 .alert-info {
-  background: #f4fbff !important;
+  background: #f4f9ff !important;
   border-color: #c8e6f5 !important;
   color: #426a80 !important;
 }
 
 .alert-warning {
-  background: #fffdf0 !important;
-  border-color: #eee48a !important;
+  background: #fffdf3 !important;
+  border-color: #f0e2a3 !important;
   color: #745f17 !important;
 }
 
@@ -734,19 +785,19 @@ input[type="radio"] {
 }
 
 .progress {
-  background: var(--apt-primary-soft) !important;
-  box-shadow: none !important;
+  background: var(--apt-purple-soft) !important;
+  border-radius: 999px !important;
 }
 
 .progress-bar {
-  background: var(--apt-primary) !important;
+  background: var(--apt-purple) !important;
 }
 
 .pagination > li > a,
 .pagination > li > span {
   background: var(--apt-surface) !important;
   border-color: var(--apt-border) !important;
-  color: var(--apt-accent) !important;
+  color: var(--apt-purple) !important;
 }
 
 .pagination > li > a:hover,
@@ -755,30 +806,31 @@ input[type="radio"] {
 .pagination > li > span:focus,
 .pagination > .active > a,
 .pagination > .active > span {
-  background: var(--apt-primary-soft) !important;
+  background: var(--apt-purple-soft) !important;
   border-color: var(--apt-border-strong) !important;
   color: var(--apt-text) !important;
 }
 
 .tooltip-inner {
-  background: var(--apt-primary-deep) !important;
+  background: var(--apt-purple-deep) !important;
+  border-radius: 6px !important;
   color: #fffaff !important;
 }
 
 .tooltip.top .tooltip-arrow {
-  border-top-color: var(--apt-primary-deep) !important;
+  border-top-color: var(--apt-purple-deep) !important;
 }
 
 .tooltip.right .tooltip-arrow {
-  border-right-color: var(--apt-primary-deep) !important;
+  border-right-color: var(--apt-purple-deep) !important;
 }
 
 .tooltip.bottom .tooltip-arrow {
-  border-bottom-color: var(--apt-primary-deep) !important;
+  border-bottom-color: var(--apt-purple-deep) !important;
 }
 
 .tooltip.left .tooltip-arrow {
-  border-left-color: var(--apt-primary-deep) !important;
+  border-left-color: var(--apt-purple-deep) !important;
 }
 
 .username > span {
@@ -826,7 +878,7 @@ input[type="radio"] {
 }
 
 .crown-gold {
-  color: #d9a40f !important;
+  color: var(--apt-yellow-deep) !important;
 }
 
 .crown-silver {
@@ -845,14 +897,19 @@ footer a:hover,
   color: var(--apt-muted) !important;
 }
 
-#fixed-server-timer {
-  color: var(--apt-muted) !important;
+#fixed-server-timer.contest-timer {
+  background: var(--apt-surface) !important;
+  border: 1px solid var(--apt-border-strong) !important;
+  border-radius: 10px !important;
+  box-shadow: var(--apt-shadow) !important;
+  color: var(--apt-purple-deep) !important;
+  font-weight: 700 !important;
 }
 
 #scroll-page-top {
-  background: rgba(66, 61, 88, 0.84) !important;
+  background: var(--apt-purple-deep) !important;
   border: 1px solid rgba(255, 250, 255, 0.24) !important;
-  border-radius: 6px !important;
-  box-shadow: 0 6px 18px rgba(44, 41, 57, 0.24) !important;
+  border-radius: 8px !important;
+  box-shadow: var(--apt-shadow) !important;
   color: #fffaff !important;
 }
