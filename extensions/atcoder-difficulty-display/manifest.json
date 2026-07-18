@@ -5,6 +5,9 @@
   "description": "Shows AtCoder Problems difficulty badges on AtCoder contest pages.",
   "permissions": ["storage"],
   "host_permissions": ["https://kenkoooo.com/*"],
+  "background": {
+    "service_worker": "background.js"
+  },
   "content_scripts": [
     {
       "matches": [

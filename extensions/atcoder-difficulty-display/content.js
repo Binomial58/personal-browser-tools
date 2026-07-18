@@ -110,16 +110,41 @@
     );
   }
 
-  async function fetchJson(url) {
-    const response = await fetch(url, {
-      credentials: "omit"
+  function fetchJsonViaBackground(url) {
+    return new Promise((resolve, reject) => {
+      if (
+        typeof chrome === "undefined" ||
+        !chrome.runtime ||
+        !chrome.runtime.sendMessage
+      ) {
+        reject(new Error("Extension messaging is unavailable."));
+        return;
+      }
+
+      chrome.runtime.sendMessage(
+        { type: `${ROOT_CLASS}:fetch`, url },
+        (response) => {
+          if (chrome.runtime.lastError) {
+            reject(new Error(chrome.runtime.lastError.message));
+            return;
+          }
+
+          if (!response || response.error) {
+            reject(new Error((response && response.error) || "Fetch failed."));
+            return;
+          }
+
+          resolve(response.data);
+        }
+      );
     });
+  }
 
-    if (!response.ok) {
-      throw new Error(`GET ${url} failed: ${response.status}`);
-    }
-
-    return response.json();
+  async function fetchJson(url) {
+    // Content scripts share the page's CORS restrictions even with
+    // host_permissions granted, so the actual fetch is delegated to the
+    // background service worker, which is exempt from the page's CORS policy.
+    return fetchJsonViaBackground(url);
   }
 
   async function getCachedJson(key, url) {
