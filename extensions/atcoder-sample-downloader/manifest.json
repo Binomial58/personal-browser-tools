@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "CP Sample Downloader",
-  "version": "0.2.0",
-  "description": "Adds sample download and AtCoder HTML copy buttons for problem and editorial pages.",
+  "version": "0.3.0",
+  "description": "Adds sample download and AtCoder HTML copy buttons for problem and editorial pages, including Codeforces.",
   "permissions": ["clipboardWrite"],
   "content_scripts": [
     {
@@ -16,7 +16,10 @@
         "https://onlinejudge.u-aizu.ac.jp/problems/*",
         "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp*",
         "http://judge.u-aizu.ac.jp/onlinejudge/description.jsp*",
-        "https://yukicoder.me/problems/*"
+        "https://yukicoder.me/problems/*",
+        "https://*.codeforces.com/problemset/problem/*",
+        "https://*.codeforces.com/contest/*/problem/*",
+        "https://*.codeforces.com/gym/*/problem/*"
       ],
       "js": ["content.js", "html-copier.js"],
       "css": ["styles.css"],

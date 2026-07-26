@@ -197,6 +197,50 @@
     return sortEntries(new Map(entries.map((entry) => [entry.name, entry])));
   }
 
+  function getPreTextWithBreaks(pre) {
+    const clone = pre.cloneNode(true);
+    Array.from(clone.querySelectorAll("br")).forEach((br) => {
+      br.replaceWith("\n");
+    });
+
+    const text = getElementText(clone);
+    return text.endsWith("\n") ? text : `${text}\n`;
+  }
+
+  function getCodeforcesSampleEntries() {
+    const container = document.querySelector(".sample-tests");
+
+    if (!container) {
+      return [];
+    }
+
+    const inputs = Array.from(container.querySelectorAll(".input pre"));
+    const outputs = Array.from(container.querySelectorAll(".output pre"));
+    const entriesByName = new Map();
+
+    inputs.forEach((pre, index) => {
+      const name = `sample-${index}.in`;
+      entriesByName.set(name, {
+        name,
+        sampleIndex: index,
+        kind: "in",
+        content: getPreTextWithBreaks(pre)
+      });
+    });
+
+    outputs.forEach((pre, index) => {
+      const name = `sample-${index}.out`;
+      entriesByName.set(name, {
+        name,
+        sampleIndex: index,
+        kind: "out",
+        content: getPreTextWithBreaks(pre)
+      });
+    });
+
+    return sortEntries(entriesByName);
+  }
+
   function getAojSampleEntries() {
     const root =
       document.querySelector("#problemStatement") ||
@@ -325,6 +369,36 @@
         );
       },
       getSampleEntries: getYukicoderSampleEntries
+    },
+    {
+      name: "codeforces",
+      matches: () =>
+        /(^|\.)codeforces\.com$/.test(location.hostname) &&
+        /^\/(problemset\/problem\/\d+|contest\/\d+\/problem|gym\/\d+\/problem)\/[^/]+\/?$/.test(
+          location.pathname
+        ),
+      findTitle: () =>
+        document.querySelector(".problem-statement .header .title"),
+      getProblemName: () => {
+        const match = location.pathname.match(
+          /^\/(?:problemset\/problem\/(\d+)|contest\/(\d+)\/problem|gym\/(\d+)\/problem)\/([A-Za-z0-9]+)/
+        );
+
+        if (match) {
+          const contestId = match[1] || match[2] || match[3];
+          return sanitizeFilename(
+            `${contestId}-${match[4]}`,
+            "codeforces-samples"
+          );
+        }
+
+        const pathParts = location.pathname.split("/").filter(Boolean);
+        return sanitizeFilename(
+          pathParts.slice(-2).join("-"),
+          "codeforces-samples"
+        );
+      },
+      getSampleEntries: getCodeforcesSampleEntries
     }
   ];
 
