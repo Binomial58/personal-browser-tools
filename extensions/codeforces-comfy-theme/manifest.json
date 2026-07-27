@@ -1,0 +1,24 @@
+{
+  "manifest_version": 3,
+  "name": "Codeforces Comfy Theme",
+  "version": "0.1.0",
+  "description": "Improves Codeforces readability with a soft pastel theme and Japanese labels for common UI text.",
+  "content_scripts": [
+    {
+      "matches": [
+        "https://codeforces.com/*",
+        "https://*.codeforces.com/*"
+      ],
+      "css": ["theme.css"],
+      "run_at": "document_start"
+    },
+    {
+      "matches": [
+        "https://codeforces.com/*",
+        "https://*.codeforces.com/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}

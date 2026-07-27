@@ -1,0 +1,346 @@
+/*
+ * Same Fairyfloss-inspired palette (purple / pink / mint / yellow) used by
+ * the AtCoder Pastel Theme, adapted for Codeforces' legacy markup. Layout
+ * and page structure are left untouched; only color, contrast, spacing and
+ * font size are adjusted for readability.
+ */
+:root {
+  --cct-surface: #ffffff;
+  --cct-surface-soft: #faf7fd;
+  --cct-surface-mint: #f2fdf8;
+  --cct-surface-pink: #fdf5fa;
+  --cct-page: #f7f5fb;
+  --cct-code-bg: #faf8fd;
+  --cct-text: #362f4d;
+  --cct-muted: #756e8a;
+  --cct-border: #e7e1f2;
+  --cct-border-strong: #d3c5ea;
+
+  --cct-purple: #6b5c94;
+  --cct-purple-deep: #4a3f6b;
+  --cct-purple-soft: #efe9fb;
+
+  --cct-pink: #ffb8d1;
+  --cct-pink-deep: #c2417a;
+  --cct-pink-darker: #9c2f61;
+
+  --cct-mint: #b9f2da;
+  --cct-mint-deep: #2f8f6c;
+
+  --cct-yellow: #ffe98a;
+  --cct-yellow-deep: #a6821c;
+
+  --cct-red: #d1567a;
+  --cct-focus: rgba(255, 184, 209, 0.4);
+  --cct-shadow: 0 6px 18px rgba(74, 63, 107, 0.1);
+}
+
+html,
+body {
+  background: var(--cct-page) !important;
+  color: var(--cct-text) !important;
+  font-size: 14px !important;
+  line-height: 1.6 !important;
+}
+
+* {
+  scrollbar-color: var(--cct-purple) var(--cct-purple-soft);
+}
+
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--cct-purple-soft);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--cct-purple);
+  border-radius: 999px;
+  border: 2px solid var(--cct-purple-soft);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--cct-purple-deep);
+}
+
+::selection {
+  background: rgba(255, 184, 209, 0.45) !important;
+  color: var(--cct-text) !important;
+}
+
+#body,
+#pageContent,
+.content {
+  background: var(--cct-page) !important;
+}
+
+a {
+  color: var(--cct-pink-deep) !important;
+}
+
+a:hover,
+a:focus {
+  color: var(--cct-pink-darker) !important;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: var(--cct-text) !important;
+}
+
+hr {
+  border-top-color: var(--cct-border) !important;
+}
+
+/* Top navigation */
+.menu-list,
+.second-level-menu-list {
+  background: var(--cct-purple) !important;
+  border-color: var(--cct-purple-deep) !important;
+}
+
+.menu-list .item,
+.second-level-menu-list li,
+.menu-list a,
+.second-level-menu-list a {
+  color: #fffaff !important;
+}
+
+.menu-list .item.selected,
+.second-level-menu-list li.selected,
+.menu-list .item:hover,
+.second-level-menu-list li:hover {
+  background: var(--cct-purple-deep) !important;
+}
+
+#header,
+.topbar,
+.lang-chooser {
+  color: var(--cct-muted) !important;
+}
+
+/* Round boxes (roundbox is the main content-card pattern on Codeforces) */
+.roundbox {
+  background: var(--cct-surface) !important;
+  border-color: var(--cct-border) !important;
+  border-radius: 10px !important;
+  box-shadow: var(--cct-shadow) !important;
+}
+
+.borderTopRound,
+.borderBottomRound {
+  background: transparent !important;
+}
+
+.caption.titled,
+.datatable .caption {
+  background: var(--cct-surface-soft) !important;
+  border-color: var(--cct-border) !important;
+  color: var(--cct-purple-deep) !important;
+  font-weight: 700 !important;
+}
+
+.sidebar .roundbox,
+#sidebar .roundbox {
+  background: var(--cct-surface-soft) !important;
+}
+
+/* Tables (problem list, standings, submissions, etc.) */
+table,
+.datatable table,
+table.rtable {
+  background: var(--cct-surface) !important;
+  border-color: var(--cct-border) !important;
+  color: var(--cct-text) !important;
+}
+
+table th,
+table td {
+  border-color: var(--cct-border) !important;
+  padding: 6px 10px !important;
+}
+
+table th {
+  background: var(--cct-surface-soft) !important;
+  color: var(--cct-purple-deep) !important;
+  font-weight: 700 !important;
+}
+
+tr:hover > td {
+  background: var(--cct-surface-pink) !important;
+}
+
+.dark,
+.light,
+tr.dark td,
+tr.light td {
+  background: var(--cct-surface) !important;
+}
+
+/* Problem statement */
+.problem-statement {
+  background: var(--cct-surface) !important;
+  color: var(--cct-text) !important;
+  font-size: 15px !important;
+  line-height: 1.7 !important;
+}
+
+.problem-statement .header {
+  border-bottom: 1px solid var(--cct-border) !important;
+  margin-bottom: 14px !important;
+  padding-bottom: 12px !important;
+}
+
+.problem-statement .title {
+  color: var(--cct-text) !important;
+}
+
+.problem-statement .time-limit,
+.problem-statement .memory-limit,
+.problem-statement .input-file,
+.problem-statement .output-file {
+  color: var(--cct-muted) !important;
+}
+
+.problem-statement .section-title {
+  border-left: 4px solid var(--cct-pink) !important;
+  color: var(--cct-text) !important;
+  font-weight: 700 !important;
+  margin: 18px 0 10px !important;
+  padding-left: 10px !important;
+}
+
+.sample-tests .title,
+.sample-test .title {
+  color: var(--cct-purple-deep) !important;
+  font-weight: 700 !important;
+}
+
+.sample-tests pre,
+.sample-test pre,
+.input pre,
+.output pre {
+  background: var(--cct-surface-mint) !important;
+  border: 1px solid var(--cct-mint) !important;
+  border-left: 4px solid var(--cct-mint) !important;
+  border-radius: 6px !important;
+  color: var(--cct-text) !important;
+  padding: 10px 12px !important;
+}
+
+/* Code blocks / inline code */
+pre,
+code,
+.prettyprint {
+  background: var(--cct-code-bg) !important;
+  border-color: var(--cct-border) !important;
+  border-radius: 6px !important;
+  color: var(--cct-text) !important;
+}
+
+/* Buttons */
+.submit,
+input[type="submit"],
+input[type="button"],
+button,
+.button {
+  background: var(--cct-surface) !important;
+  border: 1px solid var(--cct-border-strong) !important;
+  border-radius: 8px !important;
+  color: var(--cct-text) !important;
+}
+
+.submit:hover,
+input[type="submit"]:hover,
+input[type="button"]:hover,
+button:hover,
+.button:hover {
+  background: var(--cct-purple-soft) !important;
+  border-color: var(--cct-purple) !important;
+}
+
+/* Form controls */
+input[type="text"],
+input[type="password"],
+input[type="email"],
+textarea,
+select {
+  background: var(--cct-surface) !important;
+  border: 1px solid var(--cct-border-strong) !important;
+  border-radius: 6px !important;
+  color: var(--cct-text) !important;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--cct-pink) !important;
+  box-shadow: 0 0 0 3px var(--cct-focus) !important;
+  outline: 0 !important;
+}
+
+/* Rating colors, softened but still distinguishable */
+.user-gray,
+.user-black {
+  color: #7a7686 !important;
+}
+
+.user-green {
+  color: #1f9d68 !important;
+}
+
+.user-cyan {
+  color: #1aa0ad !important;
+}
+
+.user-blue {
+  color: #3465d9 !important;
+}
+
+.user-violet {
+  color: #9457d1 !important;
+}
+
+.user-orange {
+  color: #d17a2f !important;
+}
+
+.user-red,
+.user-legendary {
+  color: #d9485b !important;
+}
+
+/* Verdict colors */
+.verdict-accepted,
+.verdict-good {
+  color: var(--cct-mint-deep) !important;
+}
+
+.verdict-rejected,
+.verdict-bad {
+  color: var(--cct-red) !important;
+}
+
+/* Blog / comments */
+.ttypography {
+  color: var(--cct-text) !important;
+}
+
+.comment,
+.blockquote {
+  background: var(--cct-surface-soft) !important;
+  border-left: 4px solid var(--cct-purple) !important;
+  border-radius: 0 8px 8px 0 !important;
+}
+
+footer,
+#footer {
+  color: var(--cct-muted) !important;
+}

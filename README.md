@@ -10,6 +10,7 @@
 - [AtCoder Contest Progress](extensions/atcoder-contest-progress/)
 - [AtCoder Favorite Standings](extensions/atcoder-user-ac-notifier/)
 - [AtCoder Difficulty Display](extensions/atcoder-difficulty-display/)
+- [Codeforces Comfy Theme](extensions/codeforces-comfy-theme/)
 
 ## 構成
 
