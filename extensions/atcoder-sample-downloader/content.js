@@ -199,6 +199,17 @@
 
   function getPreTextWithBreaks(pre) {
     const clone = pre.cloneNode(true);
+
+    // Some Codeforces statements (Polygon-generated) render each sample
+    // line as its own div instead of separating lines with <br> or literal
+    // newlines, so those need an explicit newline joiner.
+    const lineDivs = Array.from(clone.querySelectorAll(":scope > div"));
+
+    if (lineDivs.length > 0) {
+      const text = lineDivs.map((div) => div.textContent).join("\n");
+      return text.endsWith("\n") ? text : `${text}\n`;
+    }
+
     Array.from(clone.querySelectorAll("br")).forEach((br) => {
       br.replaceWith("\n");
     });
