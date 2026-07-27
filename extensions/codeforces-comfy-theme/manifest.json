@@ -2,7 +2,8 @@
   "manifest_version": 3,
   "name": "Codeforces Comfy Theme",
   "version": "0.3.0",
-  "description": "Improves Codeforces readability with a soft pastel theme, Japanese labels for common UI text, and an inline submit panel.",
+  "description": "Improves Codeforces readability with a soft pastel theme, Japanese labels for common UI text, and an inline draft-and-submit panel.",
+  "permissions": ["storage"],
   "content_scripts": [
     {
       "matches": [
@@ -19,15 +20,6 @@
       ],
       "js": ["content.js"],
       "run_at": "document_idle"
-    }
-  ],
-  "web_accessible_resources": [
-    {
-      "resources": ["theme.css"],
-      "matches": [
-        "https://codeforces.com/*",
-        "https://*.codeforces.com/*"
-      ]
     }
   ]
 }

@@ -16,13 +16,15 @@ AtCoder Pastel Theme と同じ Fairyfloss 系パステルカラーを使い、�
   - 問題文の構造: Input, Output, Note, Examples, time limit per test, memory limit per test など
   - 提出結果: Accepted, Wrong answer, Time limit exceeded, Compilation error など
 - 拡張機能を無効化すると元の表示に戻せます。
-- `https://codeforces.com/contest/{id}/problem/{index}` のページでは、問題文の下に「▶ 提出」パネルを追加します。開くと本物の提出ページ(`/contest/{id}/submit`)を iframe で埋め込み、対象の問題を自動選択します。CSRF トークンや Turnstile(キャプチャ)、ftaa/bfaa といった仕組みは Codeforces 本体のフォームがそのまま処理するため、独自に POST を組み立てるより安全です。
+- `https://codeforces.com/contest/{id}/problem/{index}` のページでは、問題文の下に「▶ 提出」パネルを追加します。言語とコードを入力して「提出ページを開く →」を押すと、内容を一時保存したうえで本物の提出ページ(`/contest/{id}/submit`)に移動し、問題・言語・コードを自動入力した状態にします。最後の送信ボタンは提出ページ側でユーザー自身が押します。
+  - Codeforces の提出ページは CSRF トークンに加えて Cloudflare Turnstile(キャプチャ)や ftaa/bfaa という動的トークンを要求し、さらに `window.parent.frames.length > 0` を検知すると描画自体を止める(iframe 埋め込み対策)ため、これらの仕組みは Codeforces 本体のフォームにそのまま処理させ、拡張機能側で POST を組み立てたり iframe で埋め込んだりはしません。
 
 ## 制限事項
 
 - 翻訳は「単独のラベルとして表示されているテキストノード」に完全一致(または決まった接頭辞)する場合のみ置き換える方式です。全文翻訳ではなく、あくまで定型的な UI 文言のみが対象です。
 - Codeforces のマークアップ変更により、一部のクラス名に対するスタイルが当たらなくなる可能性があります。
 - 提出パネルは `/contest/{id}/problem/{index}` 形式のページのみ対応です(`/problemset/problem/...` や `/gym/...` は未対応)。
+- 提出ページへの自動入力は、対象の提出ページを開いてから5分以内のみ有効です(古い下書きを誤って使わないための制限)。
 
 ## インストール
 

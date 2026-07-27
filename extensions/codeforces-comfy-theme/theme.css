@@ -411,12 +411,72 @@ footer,
   border: 1px solid var(--cct-border);
   border-top: 0;
   border-radius: 0 0 8px 8px;
-  padding: 8px;
+  padding: 14px;
 }
 
-.cct-submit-panel__iframe {
-  border: 0;
-  display: block;
-  min-height: 600px;
+.cct-submit-panel__row {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.cct-submit-panel__label {
+  color: var(--cct-muted) !important;
+  font-weight: 700 !important;
+}
+
+.cct-submit-panel__language {
+  background: var(--cct-surface) !important;
+  border: 1px solid var(--cct-border-strong) !important;
+  border-radius: 6px !important;
+  color: var(--cct-text) !important;
+  padding: 4px 8px !important;
+}
+
+.cct-submit-panel__source {
+  background: var(--cct-code-bg) !important;
+  border: 1px solid var(--cct-border-strong) !important;
+  border-radius: 8px !important;
+  box-sizing: border-box;
+  color: var(--cct-text) !important;
+  font-family: Consolas, "Courier New", monospace !important;
+  font-size: 13px !important;
+  min-height: 320px;
+  padding: 10px !important;
+  resize: vertical;
   width: 100%;
+}
+
+.cct-submit-panel__source:focus {
+  border-color: var(--cct-pink) !important;
+  box-shadow: 0 0 0 3px var(--cct-focus) !important;
+  outline: 0 !important;
+}
+
+.cct-submit-panel__actions {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.cct-submit-panel__submit {
+  background: var(--cct-purple) !important;
+  border: 1px solid var(--cct-purple-deep) !important;
+  border-radius: 8px !important;
+  color: #fffaff !important;
+  cursor: pointer;
+  font-weight: 700 !important;
+  padding: 8px 16px !important;
+  white-space: nowrap;
+}
+
+.cct-submit-panel__submit:hover {
+  background: var(--cct-purple-deep) !important;
+}
+
+.cct-submit-panel__hint {
+  color: var(--cct-muted) !important;
+  font-size: 12px !important;
 }
