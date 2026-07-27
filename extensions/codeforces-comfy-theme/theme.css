@@ -102,18 +102,32 @@ hr {
 }
 
 /* Top navigation */
+
+/* Codeforces animates the active-tab highlight with an old jQuery
+   "lavaLamp" plugin that absolutely-positions a decorative box based on
+   the ORIGINAL (unthemed) tab metrics. Our font/spacing changes make that
+   math stale, so the box ends up floating over the wrong spot as a pale,
+   unreadable patch. We draw our own static indicator instead and hide the
+   plugin's box entirely. */
+.backLava,
+.leftLava,
+.bottomLava,
+.cornerLava {
+  display: none !important;
+}
+
 .menu-list {
   background: var(--cct-purple) !important;
   border-color: var(--cct-purple-deep) !important;
 }
 
-.menu-list .item,
+.menu-list li,
 .menu-list a {
   color: #fffaff !important;
 }
 
-.menu-list .item.selected,
-.menu-list .item:hover {
+.menu-list li.current,
+.menu-list li:hover {
   background: var(--cct-purple-deep) !important;
 }
 
@@ -128,8 +142,8 @@ hr {
   color: var(--cct-muted) !important;
 }
 
-.second-level-menu-list li.selected,
-.second-level-menu-list li.selected a {
+.second-level-menu-list li.current,
+.second-level-menu-list li.current a {
   border-bottom: 2px solid var(--cct-purple) !important;
   color: var(--cct-purple-deep) !important;
   font-weight: 700 !important;
