@@ -39,6 +39,8 @@ html,
 body {
   background: var(--cct-page) !important;
   color: var(--cct-text) !important;
+  font-family: "Segoe UI", "Hiragino Sans", "Noto Sans JP", Verdana, Arial,
+    sans-serif !important;
   font-size: 14px !important;
   line-height: 1.6 !important;
 }
@@ -100,30 +102,53 @@ hr {
 }
 
 /* Top navigation */
-.menu-list,
-.second-level-menu-list {
+.menu-list {
   background: var(--cct-purple) !important;
   border-color: var(--cct-purple-deep) !important;
 }
 
 .menu-list .item,
-.second-level-menu-list li,
-.menu-list a,
-.second-level-menu-list a {
+.menu-list a {
   color: #fffaff !important;
 }
 
 .menu-list .item.selected,
-.second-level-menu-list li.selected,
-.menu-list .item:hover,
-.second-level-menu-list li:hover {
+.menu-list .item:hover {
   background: var(--cct-purple-deep) !important;
 }
 
-#header,
-.topbar,
-.lang-chooser {
+.second-level-menu-list {
+  background: var(--cct-surface) !important;
+  border-bottom: 1px solid var(--cct-border) !important;
+}
+
+.second-level-menu-list li,
+.second-level-menu-list a {
+  background: transparent !important;
   color: var(--cct-muted) !important;
+}
+
+.second-level-menu-list li.selected,
+.second-level-menu-list li.selected a {
+  border-bottom: 2px solid var(--cct-purple) !important;
+  color: var(--cct-purple-deep) !important;
+  font-weight: 700 !important;
+}
+
+.second-level-menu-list li:hover,
+.second-level-menu-list li:hover a {
+  color: var(--cct-purple-deep) !important;
+}
+
+#header,
+.topbar {
+  background: var(--cct-surface-soft) !important;
+  color: var(--cct-muted) !important;
+}
+
+#header a,
+.lang-chooser a {
+  color: var(--cct-pink-deep) !important;
 }
 
 /* Round boxes (roundbox is the main content-card pattern on Codeforces) */
@@ -200,6 +225,19 @@ tr.light td {
 
 .problem-statement .title {
   color: var(--cct-text) !important;
+  font-family: inherit !important;
+}
+
+.diff-notifier {
+  background: var(--cct-surface-pink) !important;
+  border: 1px solid var(--cct-pink) !important;
+  border-radius: 8px !important;
+  color: var(--cct-text) !important;
+}
+
+.diff-notifier a {
+  color: var(--cct-pink-deep) !important;
+  font-weight: 700 !important;
 }
 
 .problem-statement .time-limit,
@@ -343,4 +381,42 @@ select:focus {
 footer,
 #footer {
   color: var(--cct-muted) !important;
+}
+
+/* Inline submit panel */
+.cct-submit-panel {
+  margin: 18px 0;
+}
+
+.cct-submit-panel__toggle {
+  background: var(--cct-purple-soft) !important;
+  border: 1px solid var(--cct-border-strong) !important;
+  border-radius: 8px !important;
+  color: var(--cct-purple-deep) !important;
+  cursor: pointer;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  padding: 10px 16px !important;
+  width: 100%;
+  text-align: left;
+}
+
+.cct-submit-panel__toggle:hover {
+  background: var(--cct-purple);
+  color: #fffaff !important;
+}
+
+.cct-submit-panel__body {
+  background: var(--cct-surface);
+  border: 1px solid var(--cct-border);
+  border-top: 0;
+  border-radius: 0 0 8px 8px;
+  padding: 8px;
+}
+
+.cct-submit-panel__iframe {
+  border: 0;
+  display: block;
+  min-height: 600px;
+  width: 100%;
 }

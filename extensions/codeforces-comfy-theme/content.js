@@ -209,6 +209,145 @@
     });
   }
 
+  function getContestProblemContext() {
+    const match = location.pathname.match(
+      /^\/contest\/(\d+)\/problem\/([A-Za-z0-9]+)\/?$/
+    );
+
+    if (!match) {
+      return null;
+    }
+
+    return { contestId: match[1], problemIndex: match[2] };
+  }
+
+  function resizeSubmitIframe(iframe) {
+    try {
+      const doc = iframe.contentDocument;
+
+      if (!doc || !doc.documentElement) {
+        return;
+      }
+
+      const height = Math.max(600, doc.documentElement.scrollHeight + 40);
+      iframe.style.height = `${height}px`;
+    } catch (_error) {
+      // Cross-document access can fail during navigation; keep current size.
+    }
+  }
+
+  function injectThemeIntoIframe(doc) {
+    if (doc.querySelector("link[data-cct-theme]")) {
+      return;
+    }
+
+    const link = doc.createElement("link");
+    link.rel = "stylesheet";
+    link.href = chrome.runtime.getURL("theme.css");
+    link.dataset.cctTheme = "true";
+    doc.head.appendChild(link);
+  }
+
+  function onSubmitIframeLoad(iframe, context) {
+    let doc;
+
+    try {
+      doc = iframe.contentDocument;
+    } catch (_error) {
+      return;
+    }
+
+    if (!doc || !doc.head) {
+      return;
+    }
+
+    injectThemeIntoIframe(doc);
+
+    const select = doc.querySelector("select[name='submittedProblemIndex']");
+
+    if (select && select.value !== context.problemIndex) {
+      select.value = context.problemIndex;
+      select.dispatchEvent(new Event("change", { bubbles: true }));
+    }
+
+    resizeSubmitIframe(iframe);
+
+    // The editor/captcha widget finish rendering asynchronously after load,
+    // so keep re-measuring for a few seconds instead of relying on one pass.
+    let attempts = 0;
+    const interval = window.setInterval(() => {
+      attempts += 1;
+      resizeSubmitIframe(iframe);
+
+      if (attempts >= 10) {
+        window.clearInterval(interval);
+      }
+    }, 500);
+  }
+
+  function createSubmitPanel(context) {
+    const section = document.createElement("div");
+    section.className = "cct-submit-panel";
+
+    const toggle = document.createElement("button");
+    toggle.type = "button";
+    toggle.className = "cct-submit-panel__toggle";
+    toggle.textContent = `▶ ${context.problemIndex} を提出`;
+
+    const body = document.createElement("div");
+    body.className = "cct-submit-panel__body";
+    body.hidden = true;
+
+    let iframeCreated = false;
+
+    toggle.addEventListener("click", () => {
+      const willExpand = body.hidden;
+      body.hidden = !willExpand;
+      toggle.textContent = `${willExpand ? "▼" : "▶"} ${
+        context.problemIndex
+      } を提出`;
+
+      if (willExpand && !iframeCreated) {
+        iframeCreated = true;
+
+        const iframe = document.createElement("iframe");
+        iframe.className = "cct-submit-panel__iframe";
+        iframe.src = `/contest/${context.contestId}/submit`;
+        iframe.addEventListener("load", () => {
+          onSubmitIframeLoad(iframe, context);
+        });
+        body.appendChild(iframe);
+      }
+    });
+
+    section.append(toggle, body);
+    return section;
+  }
+
+  function initSubmitPanel() {
+    if (window.self !== window.top) {
+      return;
+    }
+
+    const context = getContestProblemContext();
+
+    if (!context) {
+      return;
+    }
+
+    const statement = document.querySelector(".problem-statement");
+
+    if (!statement || document.querySelector(".cct-submit-panel")) {
+      return;
+    }
+
+    statement.insertAdjacentElement(
+      "afterend",
+      createSubmitPanel(context)
+    );
+  }
+
   translate(document.body);
   observeDynamicContent();
+  initSubmitPanel();
 })();

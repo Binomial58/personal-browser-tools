@@ -16,11 +16,13 @@ AtCoder Pastel Theme と同じ Fairyfloss 系パステルカラーを使い、�
   - 問題文の構造: Input, Output, Note, Examples, time limit per test, memory limit per test など
   - 提出結果: Accepted, Wrong answer, Time limit exceeded, Compilation error など
 - 拡張機能を無効化すると元の表示に戻せます。
+- `https://codeforces.com/contest/{id}/problem/{index}` のページでは、問題文の下に「▶ 提出」パネルを追加します。開くと本物の提出ページ(`/contest/{id}/submit`)を iframe で埋め込み、対象の問題を自動選択します。CSRF トークンや Turnstile(キャプチャ)、ftaa/bfaa といった仕組みは Codeforces 本体のフォームがそのまま処理するため、独自に POST を組み立てるより安全です。
 
 ## 制限事項
 
 - 翻訳は「単独のラベルとして表示されているテキストノード」に完全一致(または決まった接頭辞)する場合のみ置き換える方式です。全文翻訳ではなく、あくまで定型的な UI 文言のみが対象です。
 - Codeforces のマークアップ変更により、一部のクラス名に対するスタイルが当たらなくなる可能性があります。
+- 提出パネルは `/contest/{id}/problem/{index}` 形式のページのみ対応です(`/problemset/problem/...` や `/gym/...` は未対応)。
 
 ## インストール
 
