@@ -276,21 +276,56 @@
     });
   }
 
+  // Problemset problems are practice/upsolve submissions of a problem that
+  // still belongs to a regular contest, so they submit through that same
+  // `/contest/{id}/submit` page. Gym problems have their own `/gym/`
+  // namespace, including their own submit page.
   function getContestProblemContext() {
-    const match = location.pathname.match(
+    const contestMatch = location.pathname.match(
       /^\/contest\/(\d+)\/problem\/([A-Za-z0-9]+)\/?$/
     );
 
-    if (!match) {
-      return null;
+    if (contestMatch) {
+      return {
+        problemIndex: contestMatch[2],
+        submitPath: `/contest/${contestMatch[1]}/submit`
+      };
     }
 
-    return { contestId: match[1], problemIndex: match[2] };
+    const problemsetMatch = location.pathname.match(
+      /^\/problemset\/problem\/(\d+)\/([A-Za-z0-9]+)\/?$/
+    );
+
+    if (problemsetMatch) {
+      return {
+        problemIndex: problemsetMatch[2],
+        submitPath: `/contest/${problemsetMatch[1]}/submit`
+      };
+    }
+
+    const gymMatch = location.pathname.match(
+      /^\/gym\/(\d+)\/problem\/([A-Za-z0-9]+)\/?$/
+    );
+
+    if (gymMatch) {
+      return {
+        problemIndex: gymMatch[2],
+        submitPath: `/gym/${gymMatch[1]}/submit`
+      };
+    }
+
+    return null;
   }
 
-  function getSubmitPageContestId() {
-    const match = location.pathname.match(/^\/contest\/(\d+)\/submit\/?$/);
-    return match ? match[1] : null;
+  function getSubmitPagePath() {
+    if (
+      /^\/contest\/\d+\/submit\/?$/.test(location.pathname) ||
+      /^\/gym\/\d+\/submit\/?$/.test(location.pathname)
+    ) {
+      return location.pathname.replace(/\/$/, "");
+    }
+
+    return null;
   }
 
   function createDraftPanel(context) {
@@ -360,7 +395,7 @@
       }
 
       await storageSet(DRAFT_STORAGE_KEY, {
-        contestId: context.contestId,
+        submitPath: context.submitPath,
         problemIndex: context.problemIndex,
         programTypeId: languageSelect.value,
         source,
@@ -368,7 +403,7 @@
       });
       await storageSet(LAST_LANGUAGE_STORAGE_KEY, languageSelect.value);
 
-      location.href = `/contest/${context.contestId}/submit`;
+      location.href = context.submitPath;
     });
 
     toggle.addEventListener("click", () => {
@@ -404,15 +439,15 @@
   }
 
   async function applyPendingSubmissionIfAny() {
-    const contestId = getSubmitPageContestId();
+    const submitPath = getSubmitPagePath();
 
-    if (!contestId) {
+    if (!submitPath) {
       return;
     }
 
     const pending = await storageGet(DRAFT_STORAGE_KEY);
 
-    if (!pending || pending.contestId !== contestId) {
+    if (!pending || pending.submitPath !== submitPath) {
       return;
     }
 

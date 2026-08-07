@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Codeforces Comfy Theme",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Improves Codeforces readability with a soft pastel theme, Japanese labels for common UI text, and an inline draft-and-submit panel.",
   "permissions": ["storage"],
   "content_scripts": [
