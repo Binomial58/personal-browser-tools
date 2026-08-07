@@ -420,6 +420,17 @@
   }
 
   function getTaskIdFromLink(link) {
+    // Resolving `link.href` against the current page turns a placeholder
+    // like href="#" (used by menu buttons that aren't real navigation, e.g.
+    // other extensions' "open in bulk" actions) into today's own task URL,
+    // which would otherwise look like a legitimate link to it. Check the
+    // raw attribute first and bail out before that resolution happens.
+    const rawHref = link.getAttribute("href");
+
+    if (!rawHref || rawHref.startsWith("#")) {
+      return "";
+    }
+
     try {
       const url = new URL(link.href, location.href);
 

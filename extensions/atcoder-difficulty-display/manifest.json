@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "AtCoder Difficulty Display",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Shows AtCoder Problems difficulty badges on AtCoder contest pages.",
   "permissions": ["storage"],
   "host_permissions": ["https://kenkoooo.com/*"],
