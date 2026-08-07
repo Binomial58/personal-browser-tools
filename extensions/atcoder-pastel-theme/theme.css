@@ -175,6 +175,14 @@ button:focus,
   border: 1px solid var(--apt-border-strong) !important;
   border-radius: 10px !important;
   box-shadow: var(--apt-shadow) !important;
+}
+
+/* Clipping to round the corners is only safe on the navbar's own short
+   dropdowns. A blanket `overflow: hidden` on every `.dropdown-menu` also
+   defeats `overflow-y: auto` that other extensions rely on for long,
+   scrollable dropdowns (e.g. a full task list), since `!important` beats a
+   plain declaration regardless of which loads later. */
+.navbar .dropdown-menu {
   overflow: hidden !important;
 }
 
