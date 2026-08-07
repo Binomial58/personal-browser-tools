@@ -1,0 +1,20 @@
+{
+  "manifest_version": 3,
+  "name": "AtCoder Listing Tasks",
+  "version": "1.0.0",
+  "description": "コンテストの「問題」タブをドロップダウン化し、検索・現在地ハイライト・複数タブでの一括オープンができるようにします。",
+  "permissions": ["storage"],
+  "content_scripts": [
+    {
+      "matches": ["https://atcoder.jp/contests/*"],
+      "exclude_matches": [
+        "https://atcoder.jp/contests/",
+        "https://atcoder.jp/contests/?*",
+        "https://atcoder.jp/contests/archive*"
+      ],
+      "js": ["content.js"],
+      "css": ["styles.css"],
+      "run_at": "document_idle"
+    }
+  ]
+}
