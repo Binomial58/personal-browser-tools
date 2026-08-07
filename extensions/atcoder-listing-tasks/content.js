@@ -1,3 +1,12 @@
+/*
+ * Based on the feature set and general approach of "AtCoder Listing Tasks"
+ * (https://github.com/luuguas/AtCoderListingTasks) by luuguas, licensed
+ * under the Apache License, Version 2.0 (see ./LICENSE). This file is an
+ * independent rewrite for use as a browser extension content script rather
+ * than a userscript: no jQuery dependency, chrome.storage.local instead of
+ * IndexedDB, plus a new search/filter box and current-task highlighting
+ * that the original did not have.
+ */
 (function () {
   "use strict";
 
