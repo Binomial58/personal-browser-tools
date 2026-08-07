@@ -1,11 +1,15 @@
 /* The original userscript used `max-height: 890%`, which only resolves to a
    real limit when an ancestor has an explicit height (it usually doesn't),
    so on contests with many tasks the dropdown grows past the viewport with
-   no way to scroll to the rest. `vh` fixes that reliably. */
-.alt-dropdown {
-  max-height: 70vh;
-  overflow-x: hidden;
-  overflow-y: auto;
+   no way to scroll to the rest. `vh` fixes that reliably.
+   `!important` + the doubled-up selector is needed because AtCoder Pastel
+   Theme sets `.dropdown-menu { overflow: hidden !important; }` (to clip
+   rounded corners), which otherwise wins over a plain, non-important
+   `overflow-y: auto` here and silently disables scrolling. */
+.dropdown-menu.alt-dropdown {
+  max-height: 70vh !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
   padding-bottom: 4px;
 }
 
@@ -20,6 +24,25 @@
   border: 1px solid #ccc;
   border-radius: 4px;
   font-size: 0.9em;
+}
+
+.alt-menu-button {
+  display: block;
+  width: 100%;
+  padding: 3px 20px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.alt-menu-button:hover,
+.alt-menu-button:focus {
+  background-color: #f5f5f5;
+  outline: 0;
 }
 
 .alt-newtab-item {

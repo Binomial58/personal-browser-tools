@@ -204,18 +204,23 @@
     taskTableItem.appendChild(taskTableLink);
     menu.appendChild(taskTableItem);
 
+    // A <button>, not an <a href="#">: some AtCoder link-scanning extensions
+    // (e.g. AtCoder Difficulty Display) resolve `href="#"` against the
+    // current page URL, which keeps today's task path and makes them think
+    // this is a link to the task currently being viewed.
     const atOnceItem = createElement("li");
-    const atOnceLink = createElement("a", {
-      attrs: { href: "#", "data-toggle": "modal", "data-target": `#${MODAL_ID}` }
+    const atOnceButton = createElement("button", {
+      className: `${PREFIX}-menu-button`,
+      attrs: { type: "button", "data-toggle": "modal", "data-target": `#${MODAL_ID}` }
     });
-    atOnceLink.appendChild(
+    atOnceButton.appendChild(
       createElement("span", {
         className: "glyphicon glyphicon-sort-by-attributes-alt",
         attrs: { "aria-hidden": "true" }
       })
     );
-    atOnceLink.append(" まとめて開く...");
-    atOnceItem.appendChild(atOnceLink);
+    atOnceButton.append(" まとめて開く...");
+    atOnceItem.appendChild(atOnceButton);
     menu.appendChild(atOnceItem);
 
     const newTabValue = (await storageGet(STORAGE_KEYS.newTab)) ?? false;
