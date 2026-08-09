@@ -1,8 +1,13 @@
 {
   "manifest_version": 3,
   "name": "AtCoder Pastel Theme",
-  "version": "0.2.1",
-  "description": "Applies a calm Fairyfloss-inspired pastel color theme to AtCoder pages.",
+  "version": "0.3.0",
+  "description": "Applies a Fairyfloss-inspired pastel color theme to AtCoder pages, with a choice of a few switchable palettes.",
+  "permissions": ["storage"],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "配色を選ぶ"
+  },
   "content_scripts": [
     {
       "matches": [
@@ -11,6 +16,7 @@
         "http://*.contest.atcoder.jp/*"
       ],
       "css": ["theme.css"],
+      "js": ["content.js"],
       "run_at": "document_start"
     }
   ]
