@@ -41,6 +41,25 @@
   --apt-danger: #d1567a;
   --apt-focus: rgba(255, 184, 209, 0.4);
   --apt-shadow: 0 6px 18px rgba(74, 63, 107, 0.1);
+
+  /* --apt-primary-deep is used both as a background paired with fixed white
+     text (navbar hover, buttons, tooltips) and as a text color paired with
+     a light/soft background (badges, table headers). Those need opposite
+     lightness once a dark palette is introduced, so text-color call sites
+     use this alias instead. Every light palette leaves it equal to
+     -deep (no visual change); only the dark palette gives it its own,
+     brighter value. */
+  --apt-primary-bright: var(--apt-primary-deep);
+
+  /* Code block colors default to following the page palette, but can be
+     pinned independently via [data-apt-code-theme] regardless of which
+     palette is active (see the bottom of this file). */
+  --apt-code-text: var(--apt-text);
+  --apt-code-kwd: var(--apt-accent-deep);
+  --apt-code-str: var(--apt-secondary-deep);
+  --apt-code-lit: var(--apt-primary);
+  --apt-code-com: var(--apt-highlight-deep);
+  --apt-code-fun: var(--apt-accent-darker);
 }
 
 /* 藤 (Wisteria): deeper, more elegant blue-violet. */
@@ -140,6 +159,69 @@
   --apt-danger: #e0456f;
   --apt-focus: rgba(124, 79, 201, 0.32);
   --apt-shadow: 0 8px 20px rgba(82, 48, 143, 0.16);
+}
+
+/* ムーンナイト (Moon Night): dark background. "Soft" surfaces are slightly
+   *lighter* than the page (a raised-card look) rather than the pale,
+   near-white tints the light palettes use, and --apt-primary-bright is
+   overridden to a light lavender so text keeps working on those dark
+   soft surfaces, decoupled from --apt-primary-deep which stays mid-dark
+   for backgrounds paired with fixed white text (navbar hover, buttons). */
+:root[data-apt-palette="moon-night"] {
+  --apt-surface: #211d33;
+  --apt-surface-soft: #2a2440;
+  --apt-surface-secondary: #1f2f36;
+  --apt-surface-accent: #2f2138;
+  --apt-page: #17141f;
+  --apt-code-bg: #1c1830;
+  --apt-code-line: #241f3a;
+  --apt-text: #ece7f7;
+  --apt-muted: #a79bc4;
+  --apt-border: #392f52;
+  --apt-border-strong: #4d3f70;
+
+  --apt-primary: #6a58a8;
+  --apt-primary-deep: #4a3d7a;
+  --apt-primary-soft: #322a4d;
+  --apt-primary-bright: #b3a3ea;
+
+  --apt-accent: #a05a86;
+  --apt-accent-deep: #ff9ecf;
+  --apt-accent-darker: #ffc2e0;
+
+  --apt-secondary: #4fd8ab;
+  --apt-secondary-deep: #7fe0c2;
+
+  --apt-highlight: #e0b84f;
+  --apt-highlight-deep: #f0d98c;
+
+  --apt-danger: #ff6b8f;
+  --apt-focus: rgba(255, 158, 207, 0.35);
+  --apt-shadow: 0 8px 22px rgba(0, 0, 0, 0.45);
+}
+
+/* Code block colors, independent of the active page palette (see
+   --apt-code-* aliases in :root above). Unset = follow the page palette. */
+:root[data-apt-code-theme="dark"] {
+  --apt-code-bg: #1c1830;
+  --apt-code-line: #241f3a;
+  --apt-code-text: #ece7f7;
+  --apt-code-kwd: #ff9ecf;
+  --apt-code-str: #7fe0c2;
+  --apt-code-lit: #b3a3ea;
+  --apt-code-com: #e0b84f;
+  --apt-code-fun: #ffc2e0;
+}
+
+:root[data-apt-code-theme="light"] {
+  --apt-code-bg: #faf8fd;
+  --apt-code-line: #f1ecf9;
+  --apt-code-text: #362f4d;
+  --apt-code-kwd: #c2417a;
+  --apt-code-str: #2f8f6c;
+  --apt-code-lit: #6b5c94;
+  --apt-code-com: #a6821c;
+  --apt-code-fun: #9c2f61;
 }
 
 html,
@@ -313,7 +395,7 @@ button:focus,
 .navbar-default .navbar-nav .open .dropdown-menu > li > a:hover,
 .navbar-default .navbar-nav .open .dropdown-menu > li > a:focus {
   background: var(--apt-primary-soft) !important;
-  color: var(--apt-primary-deep) !important;
+  color: var(--apt-primary-bright) !important;
 }
 
 .dropdown-menu > .disabled > a,
@@ -373,7 +455,7 @@ small,
 .nav-tabs > li > a:focus {
   background: var(--apt-surface-soft) !important;
   border: 0 !important;
-  color: var(--apt-primary-deep) !important;
+  color: var(--apt-primary-bright) !important;
 }
 
 .nav-tabs > li.active > a,
@@ -474,7 +556,7 @@ small,
 .table > tbody > tr > th,
 .table > tfoot > tr > th {
   background: var(--apt-surface-soft) !important;
-  color: var(--apt-primary-deep) !important;
+  color: var(--apt-primary-bright) !important;
   font-weight: 700 !important;
 }
 
@@ -492,7 +574,7 @@ small,
 }
 
 .table-striped > tbody > tr:nth-of-type(odd) {
-  background: #fdfbff !important;
+  background: var(--apt-surface-soft) !important;
 }
 
 .table-hover > tbody > tr:hover,
@@ -508,11 +590,17 @@ tr.active > th,
   background: var(--apt-primary-soft) !important;
 }
 
+/* These rows don't set their own text color anywhere else, so unlike the
+   .alert-* boxes below they'd otherwise inherit the page's (light-on-dark
+   in the dark palette) text color on top of a background that stays a
+   fixed light tint regardless of palette. Pin the text color too so they
+   stay readable as self-contained status chips in every palette. */
 tr.success > td,
 tr.success > th,
 .table > tbody > tr.success > td,
 .table > tbody > tr.success > th {
   background: #f0faf5 !important;
+  color: #2f6151 !important;
 }
 
 tr.info > td,
@@ -520,6 +608,7 @@ tr.info > th,
 .table > tbody > tr.info > td,
 .table > tbody > tr.info > th {
   background: #f4f9ff !important;
+  color: #426a80 !important;
 }
 
 tr.warning > td,
@@ -527,6 +616,7 @@ tr.warning > th,
 .table > tbody > tr.warning > td,
 .table > tbody > tr.warning > th {
   background: #fffdf3 !important;
+  color: #745f17 !important;
 }
 
 tr.danger > td,
@@ -534,6 +624,7 @@ tr.danger > th,
 .table > tbody > tr.danger > td,
 .table > tbody > tr.danger > th {
   background: #fff5f8 !important;
+  color: #873d58 !important;
 }
 
 #task-statement h3,
@@ -554,7 +645,7 @@ tr.danger > th,
 #task-statement code {
   background: var(--apt-primary-soft) !important;
   border-radius: 4px !important;
-  color: var(--apt-primary-deep) !important;
+  color: var(--apt-primary-bright) !important;
   padding: 1px 5px !important;
 }
 
@@ -571,7 +662,7 @@ samp,
 .prettyprint {
   background: var(--apt-code-bg) !important;
   border-color: var(--apt-border) !important;
-  color: var(--apt-text) !important;
+  color: var(--apt-code-text) !important;
 }
 
 pre,
@@ -584,8 +675,15 @@ pre {
 }
 
 .io-style pre {
+  /* Sample input/output, not submitted code: always follow the page
+     palette's own text color rather than --apt-code-text, since its
+     background also follows the page palette (--apt-surface-secondary)
+     and not the independent code-theme toggle. Otherwise pinning the code
+     theme to dark while the page palette is light pairs light code text
+     with this box's still-light background. */
   background: var(--apt-surface-secondary) !important;
   border-left: 4px solid var(--apt-secondary) !important;
+  color: var(--apt-text) !important;
 }
 
 ol.linenums,
@@ -607,36 +705,37 @@ li.L9 {
   background: transparent !important;
 }
 
-/* Syntax colors follow the actual Fairyfloss token palette. */
+/* Syntax colors follow --apt-code-* (see :root and [data-apt-code-theme]
+   above), which in turn follow the page palette unless pinned separately. */
 pre .nocode,
 pre .pln,
 .prettyprint .pln,
 .prettyprint .pun,
 .prettyprint .opn,
 .prettyprint .clo {
-  color: var(--apt-text) !important;
+  color: var(--apt-code-text) !important;
 }
 
 pre .kwd,
 .prettyprint .kwd,
 .prettyprint .tag {
-  color: var(--apt-accent-deep) !important;
+  color: var(--apt-code-kwd) !important;
 }
 
 pre .str,
 .prettyprint .str,
 .prettyprint .atv {
-  color: var(--apt-secondary-deep) !important;
+  color: var(--apt-code-str) !important;
 }
 
 pre .lit,
 .prettyprint .lit,
 .prettyprint .dec {
-  color: var(--apt-primary) !important;
+  color: var(--apt-code-lit) !important;
 }
 
 .prettyprint .com {
-  color: var(--apt-highlight-deep) !important;
+  color: var(--apt-code-com) !important;
 }
 
 .prettyprint .typ,
@@ -646,7 +745,7 @@ pre .lit,
 }
 
 .prettyprint .fun {
-  color: var(--apt-accent-darker) !important;
+  color: var(--apt-code-fun) !important;
 }
 
 #editor,
@@ -832,12 +931,12 @@ input[type="radio"] {
 
 .badge {
   background: var(--apt-primary-soft) !important;
-  color: var(--apt-primary-deep) !important;
+  color: var(--apt-primary-bright) !important;
 }
 
 .label-default {
   background: #e9e4f0 !important;
-  color: var(--apt-text) !important;
+  color: #4a4458 !important;
 }
 
 .label-primary {
@@ -1012,7 +1111,7 @@ footer a:hover,
   border: 1px solid var(--apt-border-strong) !important;
   border-radius: 10px !important;
   box-shadow: var(--apt-shadow) !important;
-  color: var(--apt-primary-deep) !important;
+  color: var(--apt-primary-bright) !important;
   font-weight: 700 !important;
 }
 

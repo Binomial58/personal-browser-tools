@@ -13,7 +13,7 @@
 
 body {
   margin: 0;
-  width: 300px;
+  width: 320px;
   padding: 16px;
   background: var(--pop-bg);
   color: var(--pop-text);
@@ -43,6 +43,50 @@ body {
   margin: 2px 0 0;
   font-size: 12px;
   color: var(--pop-muted);
+}
+
+.popup-section {
+  margin-bottom: 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--pop-border);
+}
+
+.popup-section:last-of-type {
+  border-bottom: 0;
+}
+
+.popup-section h2 {
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--pop-muted);
+}
+
+.popup-section__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.popup-section__head h2 {
+  margin: 0;
+}
+
+.text-button {
+  border: 0;
+  background: transparent;
+  color: var(--pop-primary);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 6px;
+}
+
+.text-button:hover {
+  background: var(--pop-primary-soft);
 }
 
 .palette-grid {
@@ -99,8 +143,81 @@ body {
   height: 14px;
 }
 
+.custom-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.custom-picker__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.custom-picker__row input[type="color"] {
+  width: 40px;
+  height: 26px;
+  padding: 0;
+  border: 1px solid var(--pop-border);
+  border-radius: 6px;
+  background: none;
+  cursor: pointer;
+}
+
+.apply-button {
+  margin-top: 4px;
+  padding: 8px 10px;
+  border: 2px solid var(--pop-border);
+  border-radius: 10px;
+  background: #ffffff;
+  color: inherit;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.apply-button:hover {
+  border-color: var(--pop-primary);
+}
+
+.apply-button[aria-pressed="true"] {
+  border-color: var(--pop-primary);
+  background: var(--pop-primary-soft);
+}
+
+.segmented {
+  display: flex;
+  gap: 6px;
+}
+
+.segmented__option {
+  flex: 1;
+  padding: 8px 4px;
+  border: 2px solid var(--pop-border);
+  border-radius: 10px;
+  background: #ffffff;
+  color: inherit;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  text-align: center;
+}
+
+.segmented__option:hover {
+  border-color: var(--pop-primary);
+}
+
+.segmented__option[aria-pressed="true"] {
+  border-color: var(--pop-primary);
+  background: var(--pop-primary-soft);
+}
+
 .popup-footer {
-  margin-top: 14px;
   text-align: center;
 }
 

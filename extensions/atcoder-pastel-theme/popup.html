@@ -14,12 +14,47 @@
       </div>
     </header>
 
-    <div id="palette-grid" class="palette-grid"></div>
+    <section class="popup-section">
+      <div class="popup-section__head">
+        <h2>配色</h2>
+        <button type="button" id="random-button" class="text-button">
+          🎲 おまかせ
+        </button>
+      </div>
+      <div id="palette-grid" class="palette-grid"></div>
+    </section>
+
+    <section class="popup-section">
+      <h2>カスタム配色</h2>
+      <div id="custom-picker" class="custom-picker">
+        <label class="custom-picker__row">
+          <span>メイン</span>
+          <input type="color" id="custom-primary" />
+        </label>
+        <label class="custom-picker__row">
+          <span>アクセント</span>
+          <input type="color" id="custom-accent" />
+        </label>
+        <label class="custom-picker__row">
+          <span>サブ</span>
+          <input type="color" id="custom-secondary" />
+        </label>
+        <button type="button" id="custom-apply" class="apply-button">
+          このカスタム配色を使う
+        </button>
+      </div>
+    </section>
+
+    <section class="popup-section">
+      <h2>コードブロック</h2>
+      <div id="code-theme-group" class="segmented"></div>
+    </section>
 
     <footer class="popup-footer">
       <p>選ぶとすぐに反映されます(開いているAtCoderのタブも即更新)</p>
     </footer>
 
+    <script src="palette-utils.js"></script>
     <script src="popup.js"></script>
   </body>
 </html>
