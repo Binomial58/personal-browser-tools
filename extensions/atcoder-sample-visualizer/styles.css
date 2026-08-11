@@ -1,27 +1,20 @@
 /*
- * The panel is a self-contained card with its own light/dark surface
- * (via prefers-color-scheme), independent of whatever page theme extension
- * (if any) is installed — so it stays readable regardless. Marker color
- * reuses the dataviz skill's validated default categorical slot 1 (blue),
- * since this is always a single series (points, or graph nodes) and never
- * needs a legend.
+ * Always a white-based card, independent of whatever page theme extension
+ * (if any) is installed or the OS's dark-mode setting — so the diagram
+ * stays a consistent, predictable white "sheet of paper" regardless.
+ * Marker color reuses the dataviz skill's validated default categorical
+ * slot 1 (blue), since this is always a single series (points, or graph
+ * nodes) and never needs a legend.
  */
 .asv-panel {
-  --asv-surface: #fcfcfb;
+  --asv-surface: #ffffff;
   --asv-text: #0b0b0b;
-  --asv-muted: #52514e;
+  --asv-muted: #6b6a66;
   --asv-border: #d8d7d2;
+  --asv-grid: #eceae5;
   --asv-series: #2a78d6;
-}
-
-@media (prefers-color-scheme: dark) {
-  .asv-panel {
-    --asv-surface: #1a1a19;
-    --asv-text: #ffffff;
-    --asv-muted: #c3c2b7;
-    --asv-border: #3a3a37;
-    --asv-series: #3987e5;
-  }
+  --asv-good: #1baf7a;
+  --asv-bad: #e34948;
 }
 
 .asv-toggle-button {
@@ -43,19 +36,42 @@
 }
 
 .asv-panel {
-  display: flex;
-  justify-content: center;
   margin: 10px 0 20px;
-  padding: 12px;
+  padding: 14px;
   border: 1px solid var(--asv-border);
   border-radius: 8px;
   background: var(--asv-surface);
+  color: var(--asv-text);
+}
+
+.asv-caption {
+  margin: 0 0 8px;
+  font-size: 12px;
+  color: var(--asv-muted);
+  text-align: center;
 }
 
 .asv-svg {
+  display: block;
   width: 100%;
   max-width: 420px;
   height: auto;
+  margin: 0 auto;
+}
+
+.asv-grid-line {
+  stroke: var(--asv-grid);
+  stroke-width: 1;
+}
+
+.asv-tick-label {
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 9px;
+  fill: var(--asv-muted);
+}
+
+.asv-tick-label--y {
+  font-size: 9px;
 }
 
 .asv-frame {
@@ -77,9 +93,19 @@
 }
 
 .asv-edge {
+  fill: none;
   stroke: var(--asv-muted);
   stroke-width: 2;
   stroke-linecap: round;
+}
+
+.asv-edge--loop {
+  stroke: var(--asv-series);
+  stroke-dasharray: 3 2;
+}
+
+.asv-edge--multi {
+  stroke: var(--asv-series);
 }
 
 .asv-node {
@@ -99,4 +125,40 @@
   font-family: Consolas, "Courier New", monospace;
   font-size: 9px;
   fill: var(--asv-muted);
+}
+
+.asv-checklist {
+  width: 100%;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--asv-border);
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.asv-checklist th,
+.asv-checklist td {
+  padding: 3px 6px;
+  text-align: left;
+  font-weight: normal;
+  color: var(--asv-text);
+}
+
+.asv-checklist th {
+  width: 45%;
+  color: var(--asv-muted);
+}
+
+.asv-mark {
+  display: inline-block;
+  width: 14px;
+  font-weight: 700;
+}
+
+.asv-mark--yes {
+  color: var(--asv-good);
+}
+
+.asv-mark--no {
+  color: var(--asv-bad);
 }
