@@ -1,0 +1,102 @@
+/*
+ * The panel is a self-contained card with its own light/dark surface
+ * (via prefers-color-scheme), independent of whatever page theme extension
+ * (if any) is installed — so it stays readable regardless. Marker color
+ * reuses the dataviz skill's validated default categorical slot 1 (blue),
+ * since this is always a single series (points, or graph nodes) and never
+ * needs a legend.
+ */
+.asv-panel {
+  --asv-surface: #fcfcfb;
+  --asv-text: #0b0b0b;
+  --asv-muted: #52514e;
+  --asv-border: #d8d7d2;
+  --asv-series: #2a78d6;
+}
+
+@media (prefers-color-scheme: dark) {
+  .asv-panel {
+    --asv-surface: #1a1a19;
+    --asv-text: #ffffff;
+    --asv-muted: #c3c2b7;
+    --asv-border: #3a3a37;
+    --asv-series: #3987e5;
+  }
+}
+
+.asv-toggle-button {
+  margin-left: 8px;
+  padding: 2px 8px;
+  border: 1px solid #b9bec7;
+  border-radius: 4px;
+  background: #f7f8fa;
+  color: #2f3640;
+  font: inherit;
+  font-size: 0.8em;
+  line-height: 1.4;
+  vertical-align: middle;
+  cursor: pointer;
+}
+
+.asv-toggle-button:hover {
+  background: #eef1f5;
+}
+
+.asv-panel {
+  display: flex;
+  justify-content: center;
+  margin: 10px 0 20px;
+  padding: 12px;
+  border: 1px solid var(--asv-border);
+  border-radius: 8px;
+  background: var(--asv-surface);
+}
+
+.asv-svg {
+  width: 100%;
+  max-width: 420px;
+  height: auto;
+}
+
+.asv-frame {
+  fill: none;
+  stroke: var(--asv-border);
+  stroke-width: 1;
+}
+
+.asv-point {
+  fill: var(--asv-series);
+  stroke: var(--asv-surface);
+  stroke-width: 2;
+}
+
+.asv-label {
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 11px;
+  fill: var(--asv-muted);
+}
+
+.asv-edge {
+  stroke: var(--asv-muted);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.asv-node {
+  fill: var(--asv-series);
+  stroke: var(--asv-surface);
+  stroke-width: 2;
+}
+
+.asv-node-label {
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 10px;
+  fill: #ffffff;
+  pointer-events: none;
+}
+
+.asv-weight {
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 9px;
+  fill: var(--asv-muted);
+}
