@@ -361,6 +361,110 @@
     };
   }
 
+  // ---- grid maze analysis: BFS shortest path + connected components.
+  // '#' is always a wall; every other character is treated as walkable,
+  // since we can't know a problem-specific meaning for other symbols. ----
+
+  const GRID_DIRS = [
+    [1, 0],
+    [-1, 0],
+    [0, 1],
+    [0, -1]
+  ];
+
+  function isGridWalkable(ch) {
+    return ch !== "#";
+  }
+
+  function bfsGridPath(rows, h, w, start, goal) {
+    const dist = Array.from({ length: h }, () => new Array(w).fill(-1));
+    const prev = Array.from({ length: h }, () => new Array(w).fill(null));
+    dist[start.r][start.c] = 0;
+
+    const queue = [start];
+    let head = 0;
+
+    while (head < queue.length) {
+      const cur = queue[head];
+      head += 1;
+
+      if (cur.r === goal.r && cur.c === goal.c) {
+        break;
+      }
+
+      for (const [dr, dc] of GRID_DIRS) {
+        const nr = cur.r + dr;
+        const nc = cur.c + dc;
+
+        if (nr < 0 || nr >= h || nc < 0 || nc >= w) {
+          continue;
+        }
+        if (!isGridWalkable(rows[nr][nc]) || dist[nr][nc] !== -1) {
+          continue;
+        }
+
+        dist[nr][nc] = dist[cur.r][cur.c] + 1;
+        prev[nr][nc] = cur;
+        queue.push({ r: nr, c: nc });
+      }
+    }
+
+    if (dist[goal.r][goal.c] === -1) {
+      return { reachable: false };
+    }
+
+    const path = [];
+    let node = goal;
+    while (node) {
+      path.push(node);
+      node = prev[node.r][node.c];
+    }
+    path.reverse();
+
+    return { reachable: true, distance: dist[goal.r][goal.c], path };
+  }
+
+  function computeGridComponents(rows, h, w) {
+    const comp = Array.from({ length: h }, () => new Array(w).fill(-1));
+    let count = 0;
+
+    for (let r = 0; r < h; r += 1) {
+      for (let c = 0; c < w; c += 1) {
+        if (!isGridWalkable(rows[r][c]) || comp[r][c] !== -1) {
+          continue;
+        }
+
+        const queue = [{ r, c }];
+        comp[r][c] = count;
+        let head = 0;
+
+        while (head < queue.length) {
+          const cur = queue[head];
+          head += 1;
+
+          for (const [dr, dc] of GRID_DIRS) {
+            const nr = cur.r + dr;
+            const nc = cur.c + dc;
+
+            if (nr < 0 || nr >= h || nc < 0 || nc >= w) {
+              continue;
+            }
+            if (!isGridWalkable(rows[nr][nc]) || comp[nr][nc] !== -1) {
+              continue;
+            }
+
+            comp[nr][nc] = count;
+            queue.push({ r: nr, c: nc });
+          }
+        }
+
+        count += 1;
+      }
+    }
+
+    return { comp, count };
+  }
+
   // ---- "nice" grid step (1/2/5 * 10^k), like a chart library would pick ----
 
   function niceStep(range) {
@@ -1102,9 +1206,29 @@
       categoricalIndex += 1;
     });
 
-    // ---- paint palette: click a cell to mark it with the selected color,
-    // as a translucent overlay so the original character underneath (and
-    // its tooltip) stay intact. ----
+    let mode = "paint";
+
+    // ---- mode switch: paint (click/drag to color cells), or measure
+    // (pick two walkable cells to see the wall-avoiding shortest path) ----
+    const modeRow = document.createElement("div");
+    modeRow.className = "asv-mode-controls";
+
+    const paintModeBtn = document.createElement("button");
+    paintModeBtn.type = "button";
+    paintModeBtn.className = "asv-mode-button asv-mode-button--active";
+    paintModeBtn.textContent = "🖌 塗る";
+
+    const measureModeBtn = document.createElement("button");
+    measureModeBtn.type = "button";
+    measureModeBtn.className = "asv-mode-button";
+    measureModeBtn.textContent = "📏 距離を測る";
+
+    modeRow.append(paintModeBtn, measureModeBtn);
+    wrapper.appendChild(modeRow);
+
+    // ---- paint palette: click or drag across cells to mark them with the
+    // selected color, as a translucent overlay so the original character
+    // underneath (and its tooltip) stay intact. ----
     const paintRow = document.createElement("div");
     paintRow.className = "asv-paint-controls";
 
@@ -1144,6 +1268,9 @@
     swatchButtons.push(eraser);
     paintRow.appendChild(eraser);
 
+    const componentsButton = makeButtonControl("連結成分に色分け");
+    paintRow.appendChild(componentsButton);
+
     const resetButton = makeButtonControl("すべて消す");
     paintRow.appendChild(resetButton);
 
@@ -1151,15 +1278,18 @@
 
     const info = document.createElement("p");
     info.className = "asv-info";
-    info.textContent = "マス目をクリックすると、選択中の色で塗れます。";
+    info.textContent = "マス目をドラッグすると、選択中の色で連続して塗れます。";
     wrapper.appendChild(info);
 
     const svg = document.createElementNS(SVG_NS, "svg");
     svg.setAttribute("viewBox", `0 0 ${VIEW_SIZE} ${VIEW_SIZE}`);
     svg.setAttribute("class", "asv-svg");
     svg.setAttribute("role", "img");
+    svg.addEventListener("dragstart", (event) => event.preventDefault());
 
     const overlays = [];
+    const pathOverlays = [];
+    const cellRects = [];
 
     for (let r = 0; r < h; r += 1) {
       for (let c = 0; c < w; c += 1) {
@@ -1174,6 +1304,8 @@
         rect.setAttribute("height", cellSize);
         rect.setAttribute("class", "asv-grid-cell");
         rect.style.fill = colorFor[ch];
+        rect.dataset.r = String(r);
+        rect.dataset.c = String(c);
 
         const title = document.createElementNS(SVG_NS, "title");
         title.textContent = `(${r + 1}, ${c + 1}) = '${ch}'`;
@@ -1187,24 +1319,154 @@
         overlay.setAttribute("class", "asv-grid-paint");
         overlay.style.fill = "none";
 
-        // The overlay sits visually on top but never intercepts pointer
-        // events, so clicks (and the tooltip) still go through the base
-        // cell beneath it.
-        rect.addEventListener("click", () => {
-          overlay.style.fill = currentPaint || "none";
-        });
+        const pathOverlay = document.createElementNS(SVG_NS, "rect");
+        pathOverlay.setAttribute("x", x);
+        pathOverlay.setAttribute("y", y);
+        pathOverlay.setAttribute("width", cellSize);
+        pathOverlay.setAttribute("height", cellSize);
+        pathOverlay.setAttribute("class", "asv-grid-path");
+        pathOverlay.style.opacity = "0";
 
         svg.appendChild(rect);
         svg.appendChild(overlay);
+        svg.appendChild(pathOverlay);
+
         overlays.push(overlay);
+        pathOverlays.push(pathOverlay);
+        cellRects.push(rect);
       }
     }
+
+    const overlayAt = (r, c) => overlays[r * w + c];
+    const pathOverlayAt = (r, c) => pathOverlays[r * w + c];
+    const cellRectAt = (r, c) => cellRects[r * w + c];
+
+    // ---- paint mode: click or drag ----
+    let isDragging = false;
+
+    function paintAt(r, c) {
+      overlayAt(r, c).style.fill = currentPaint || "none";
+    }
+
+    window.addEventListener("mouseup", () => {
+      isDragging = false;
+    });
 
     resetButton.addEventListener("click", () => {
       overlays.forEach((overlay) => {
         overlay.style.fill = "none";
       });
     });
+
+    componentsButton.addEventListener("click", () => {
+      const { comp, count } = computeGridComponents(rows, h, w);
+
+      for (let r = 0; r < h; r += 1) {
+        for (let c = 0; c < w; c += 1) {
+          overlayAt(r, c).style.fill =
+            comp[r][c] === -1
+              ? "none"
+              : CATEGORICAL_COLORS[comp[r][c] % CATEGORICAL_COLORS.length];
+        }
+      }
+
+      info.textContent = `連結成分(壁を除く): ${count} 個`;
+    });
+
+    // ---- measure mode: click two walkable cells for the shortest path ----
+    let measureSelection = [];
+
+    function clearPathHighlight() {
+      pathOverlays.forEach((overlay) => {
+        overlay.style.opacity = "0";
+      });
+    }
+
+    function clearMeasureMarkers() {
+      cellRects.forEach((rect) => rect.classList.remove("asv-grid-cell--selected"));
+    }
+
+    function handleMeasureClick(r, c) {
+      if (!isGridWalkable(rows[r][c])) {
+        info.textContent = "壁のマスは選択できません。";
+        return;
+      }
+
+      if (measureSelection.length >= 2) {
+        measureSelection = [];
+        clearPathHighlight();
+        clearMeasureMarkers();
+      }
+
+      measureSelection.push({ r, c });
+      cellRectAt(r, c).classList.add("asv-grid-cell--selected");
+
+      if (measureSelection.length === 1) {
+        info.textContent = `(${r + 1}, ${c + 1}) を選択しました。2つ目のマスをクリックしてください。`;
+        return;
+      }
+
+      const [start, goal] = measureSelection;
+      const result = bfsGridPath(rows, h, w, start, goal);
+      clearPathHighlight();
+
+      if (!result.reachable) {
+        info.textContent = `(${start.r + 1}, ${start.c + 1}) から (${goal.r + 1}, ${
+          goal.c + 1
+        }) へは壁に阻まれて到達できません。`;
+        return;
+      }
+
+      result.path.forEach(({ r: pr, c: pc }) => {
+        pathOverlayAt(pr, pc).style.opacity = "1";
+      });
+      info.textContent = `(${start.r + 1}, ${start.c + 1}) から (${goal.r + 1}, ${
+        goal.c + 1
+      }) までの最短距離: ${result.distance} 歩`;
+    }
+
+    cellRects.forEach((rect) => {
+      const r = Number(rect.dataset.r);
+      const c = Number(rect.dataset.c);
+
+      rect.addEventListener("mousedown", (event) => {
+        if (mode !== "paint") {
+          return;
+        }
+        event.preventDefault();
+        isDragging = true;
+        paintAt(r, c);
+      });
+
+      rect.addEventListener("mouseenter", () => {
+        if (mode === "paint" && isDragging) {
+          paintAt(r, c);
+        }
+      });
+
+      rect.addEventListener("click", () => {
+        if (mode === "measure") {
+          handleMeasureClick(r, c);
+        }
+      });
+    });
+
+    function setMode(next) {
+      mode = next;
+      paintModeBtn.classList.toggle("asv-mode-button--active", mode === "paint");
+      measureModeBtn.classList.toggle("asv-mode-button--active", mode === "measure");
+      paintRow.hidden = mode !== "paint";
+      measureSelection = [];
+      clearPathHighlight();
+      clearMeasureMarkers();
+      info.textContent =
+        mode === "paint"
+          ? "マス目をドラッグすると、選択中の色で連続して塗れます。"
+          : "2つのマスをクリックすると、壁を避けた最短距離を表示します。";
+    }
+
+    paintModeBtn.addEventListener("click", () => setMode("paint"));
+    measureModeBtn.addEventListener("click", () => setMode("measure"));
 
     const border = document.createElementNS(SVG_NS, "rect");
     border.setAttribute("x", offsetX);

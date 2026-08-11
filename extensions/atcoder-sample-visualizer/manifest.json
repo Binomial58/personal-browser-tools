@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "AtCoder Sample Visualizer",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "サンプル入力を点群・(頂点・辺)グラフ・グリッドのいずれかとして解釈できたときに、座標平面上に描画するボタンを追加します。",
   "content_scripts": [
     {

@@ -250,12 +250,51 @@
   stroke: var(--asv-grid);
   stroke-width: 0.5;
   cursor: pointer;
+  user-select: none;
+}
+
+.asv-grid-cell--selected {
+  stroke: var(--asv-accent);
+  stroke-width: 2.5;
 }
 
 .asv-grid-paint {
   stroke: none;
   fill-opacity: 0.55;
   pointer-events: none;
+}
+
+.asv-grid-path {
+  fill: var(--asv-accent);
+  fill-opacity: 0.6;
+  stroke: none;
+  pointer-events: none;
+  transition: opacity 0.1s ease;
+}
+
+.asv-mode-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.asv-mode-button {
+  padding: 4px 10px;
+  border: 1px solid var(--asv-border);
+  border-radius: 999px;
+  background: var(--asv-surface);
+  color: var(--asv-muted);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.asv-mode-button--active {
+  border-color: var(--asv-series);
+  background: var(--asv-series);
+  color: #ffffff;
 }
 
 .asv-paint-controls {
@@ -265,6 +304,14 @@
   gap: 8px;
   margin-bottom: 8px;
   flex-wrap: wrap;
+}
+
+/* The `hidden` attribute's UA-stylesheet `display: none` is weaker than
+   any author rule that sets `display` on the same element (here, the flex
+   rule above), so it silently loses and the element stays visible unless
+   this is spelled out explicitly. */
+.asv-paint-controls[hidden] {
+  display: none;
 }
 
 .asv-paint-swatch {
