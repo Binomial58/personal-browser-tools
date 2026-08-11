@@ -1054,6 +1054,15 @@
 
   // ---- grid / maze ----
 
+  const PAINT_COLORS = [
+    "#2a78d6",
+    "#eb6834",
+    "#1baf7a",
+    "#eda100",
+    "#e87ba4",
+    "#4a3aa7"
+  ];
+
   function renderGridSvg(h, w, rows) {
     const wrapper = document.createElement("div");
     wrapper.appendChild(renderCaption(`グリッド: ${h} 行 × ${w} 列`));
@@ -1093,17 +1102,74 @@
       categoricalIndex += 1;
     });
 
+    // ---- paint palette: click a cell to mark it with the selected color,
+    // as a translucent overlay so the original character underneath (and
+    // its tooltip) stay intact. ----
+    const paintRow = document.createElement("div");
+    paintRow.className = "asv-paint-controls";
+
+    let currentPaint = PAINT_COLORS[0];
+    const swatchButtons = [];
+
+    function selectSwatch(button, color) {
+      currentPaint = color;
+      swatchButtons.forEach((b) => b.classList.remove("asv-paint-swatch--active"));
+      button.classList.add("asv-paint-swatch--active");
+    }
+
+    PAINT_COLORS.forEach((color, i) => {
+      const swatch = document.createElement("button");
+      swatch.type = "button";
+      swatch.className = "asv-paint-swatch";
+      swatch.style.background = color;
+      swatch.title = "この色で塗る";
+      swatch.setAttribute("aria-label", "この色で塗る");
+      swatch.addEventListener("click", () => selectSwatch(swatch, color));
+
+      if (i === 0) {
+        swatch.classList.add("asv-paint-swatch--active");
+      }
+
+      swatchButtons.push(swatch);
+      paintRow.appendChild(swatch);
+    });
+
+    const eraser = document.createElement("button");
+    eraser.type = "button";
+    eraser.className = "asv-paint-swatch asv-paint-swatch--eraser";
+    eraser.title = "消す";
+    eraser.setAttribute("aria-label", "消す");
+    eraser.textContent = "✕";
+    eraser.addEventListener("click", () => selectSwatch(eraser, null));
+    swatchButtons.push(eraser);
+    paintRow.appendChild(eraser);
+
+    const resetButton = makeButtonControl("すべて消す");
+    paintRow.appendChild(resetButton);
+
+    wrapper.appendChild(paintRow);
+
+    const info = document.createElement("p");
+    info.className = "asv-info";
+    info.textContent = "マス目をクリックすると、選択中の色で塗れます。";
+    wrapper.appendChild(info);
+
     const svg = document.createElementNS(SVG_NS, "svg");
     svg.setAttribute("viewBox", `0 0 ${VIEW_SIZE} ${VIEW_SIZE}`);
     svg.setAttribute("class", "asv-svg");
     svg.setAttribute("role", "img");
 
+    const overlays = [];
+
     for (let r = 0; r < h; r += 1) {
       for (let c = 0; c < w; c += 1) {
         const ch = rows[r][c];
+        const x = offsetX + c * cellSize;
+        const y = offsetY + r * cellSize;
+
         const rect = document.createElementNS(SVG_NS, "rect");
-        rect.setAttribute("x", offsetX + c * cellSize);
-        rect.setAttribute("y", offsetY + r * cellSize);
+        rect.setAttribute("x", x);
+        rect.setAttribute("y", y);
         rect.setAttribute("width", cellSize);
         rect.setAttribute("height", cellSize);
         rect.setAttribute("class", "asv-grid-cell");
@@ -1112,9 +1178,33 @@
         const title = document.createElementNS(SVG_NS, "title");
         title.textContent = `(${r + 1}, ${c + 1}) = '${ch}'`;
         rect.appendChild(title);
+
+        const overlay = document.createElementNS(SVG_NS, "rect");
+        overlay.setAttribute("x", x);
+        overlay.setAttribute("y", y);
+        overlay.setAttribute("width", cellSize);
+        overlay.setAttribute("height", cellSize);
+        overlay.setAttribute("class", "asv-grid-paint");
+        overlay.style.fill = "none";
+
+        // The overlay sits visually on top but never intercepts pointer
+        // events, so clicks (and the tooltip) still go through the base
+        // cell beneath it.
+        rect.addEventListener("click", () => {
+          overlay.style.fill = currentPaint || "none";
+        });
+
         svg.appendChild(rect);
+        svg.appendChild(overlay);
+        overlays.push(overlay);
       }
     }
+
+    resetButton.addEventListener("click", () => {
+      overlays.forEach((overlay) => {
+        overlay.style.fill = "none";
+      });
+    });
 
     const border = document.createElementNS(SVG_NS, "rect");
     border.setAttribute("x", offsetX);

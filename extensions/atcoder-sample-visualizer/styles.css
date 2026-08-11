@@ -249,6 +249,43 @@
 .asv-grid-cell {
   stroke: var(--asv-grid);
   stroke-width: 0.5;
+  cursor: pointer;
+}
+
+.asv-grid-paint {
+  stroke: none;
+  fill-opacity: 0.55;
+  pointer-events: none;
+}
+
+.asv-paint-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.asv-paint-swatch {
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px var(--asv-border);
+  cursor: pointer;
+}
+
+.asv-paint-swatch--active {
+  border-color: var(--asv-text);
+}
+
+.asv-paint-swatch--eraser {
+  background: var(--asv-surface);
+  color: var(--asv-muted);
+  font-size: 11px;
+  line-height: 1;
 }
 
 .asv-legend {
