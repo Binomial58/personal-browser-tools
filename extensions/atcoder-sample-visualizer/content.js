@@ -6,8 +6,19 @@
   const MAX_POINTS = 2000;
   const MAX_GRAPH_NODES = 300;
   const MAX_GRAPH_EDGES = 2000;
+  const MAX_GRID_CELLS = 3000;
   const VIEW_SIZE = 360;
   const PAD = 36;
+  const CATEGORICAL_COLORS = [
+    "#2a78d6",
+    "#eb6834",
+    "#1baf7a",
+    "#eda100",
+    "#e87ba4",
+    "#008300",
+    "#4a3aa7",
+    "#e34948"
+  ];
 
   // ---- sample heading / <pre> discovery (mirrors the logic other
   // extensions in this repo already use to find "入力例 N" blocks) ----
@@ -70,7 +81,7 @@
     return clone.textContent || "";
   }
 
-  // ---- parsing: does this sample look like points, or a graph? ----
+  // ---- parsing: does this sample look like points, a graph, or a grid? ----
 
   function tokenizeLines(text) {
     return text
@@ -197,7 +208,52 @@
     return { n, edges, zeroIndexed };
   }
 
-  // ---- graph structural analysis, for the checklist ----
+  // "H W" then H lines, each a string of exactly W characters.
+  function tryParseAsGrid(text) {
+    const lines = tokenizeLines(text);
+
+    if (lines.length < 1) {
+      return null;
+    }
+
+    const first = parseNumbers(lines[0]);
+
+    if (!first || first.length !== 2) {
+      return null;
+    }
+
+    const [h, w] = first;
+
+    if (
+      !Number.isInteger(h) ||
+      !Number.isInteger(w) ||
+      h <= 0 ||
+      w <= 0 ||
+      h * w > MAX_GRID_CELLS
+    ) {
+      return null;
+    }
+
+    if (lines.length < 1 + h) {
+      return null;
+    }
+
+    const rows = [];
+
+    for (let i = 0; i < h; i += 1) {
+      const row = lines[1 + i];
+
+      if (row.length !== w || /\s/.test(row)) {
+        return null;
+      }
+
+      rows.push(row);
+    }
+
+    return { h, w, rows };
+  }
+
+  // ---- graph structural analysis, for the checklist + layout choice ----
 
   function analyzeGraph(n, edges, zeroIndexed) {
     const lo = zeroIndexed ? 0 : 1;
@@ -220,7 +276,6 @@
       (count) => count > 1
     ).length;
 
-    // Union-Find for connected components + a plain cycle flag.
     const parent = Array.from({ length: n }, (_, i) => i);
 
     function find(x) {
@@ -256,7 +311,6 @@
     const connected = componentCount === 1;
     const isTree = connected && !hasCycle && edges.length === n - 1;
 
-    // Bipartite check (2-coloring via BFS). A self-loop always breaks it.
     const adjacency = Array.from({ length: n }, () => []);
     edges.forEach((e) => {
       if (e.u === e.v) {
@@ -302,7 +356,8 @@
       componentCount,
       hasCycle,
       isTree,
-      bipartite
+      bipartite,
+      adjacency
     };
   }
 
@@ -334,7 +389,7 @@
     return String(rounded);
   }
 
-  // ---- force-directed layout for the graph case (no given coordinates) ----
+  // ---- layouts ----
 
   function computeForceLayout(n, edges, zeroIndexed) {
     const lo = zeroIndexed ? 0 : 1;
@@ -395,7 +450,34 @@
     return positions;
   }
 
-  // ---- SVG rendering ----
+  // Rooted, top-down layout used when the sample is a tree: much more
+  // readable than a generic force layout for tree DP / LCA style problems.
+  function computeTreeLayout(n, adjacency) {
+    const positions = new Array(n);
+    const xSpacing = 42;
+    const ySpacing = 56;
+    let nextLeafSlot = 0;
+
+    function place(node, parent, depth) {
+      const children = adjacency[node].filter((c) => c !== parent);
+
+      if (children.length === 0) {
+        positions[node] = { x: nextLeafSlot * xSpacing, y: depth * ySpacing };
+        nextLeafSlot += 1;
+        return positions[node].x;
+      }
+
+      const childXs = children.map((c) => place(c, node, depth + 1));
+      const x = (Math.min(...childXs) + Math.max(...childXs)) / 2;
+      positions[node] = { x, y: depth * ySpacing };
+      return x;
+    }
+
+    place(0, -1, 0);
+    return positions;
+  }
+
+  // ---- SVG rendering helpers ----
 
   function makeSvgRoot() {
     const svg = document.createElementNS(SVG_NS, "svg");
@@ -436,7 +518,7 @@
     return caption;
   }
 
-  function renderGrid(toSvgX, toSvgY, minX, maxX, minY, maxY, flipY) {
+  function renderGrid(toSvgX, toSvgY, minX, maxX, minY, maxY) {
     const group = document.createElementNS(SVG_NS, "g");
     group.setAttribute("class", "asv-grid");
 
@@ -490,6 +572,51 @@
     return group;
   }
 
+  function makeControlsRow() {
+    const controls = document.createElement("div");
+    controls.className = "asv-controls";
+    return controls;
+  }
+
+  function makeCheckboxControl(labelText) {
+    const label = document.createElement("label");
+    label.className = "asv-toggle-label";
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    label.append(checkbox, ` ${labelText}`);
+    return { label, checkbox };
+  }
+
+  function makeButtonControl(labelText) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "asv-clear-button";
+    button.textContent = labelText;
+    return button;
+  }
+
+  // ---- points (with click-to-connect distance/angle) ----
+
+  function distance(a, b) {
+    return Math.hypot(a.x - b.x, a.y - b.y);
+  }
+
+  function angleAtVertex(a, b, c) {
+    const v1x = a.x - b.x;
+    const v1y = a.y - b.y;
+    const v2x = c.x - b.x;
+    const v2y = c.y - b.y;
+    const mag1 = Math.hypot(v1x, v1y);
+    const mag2 = Math.hypot(v2x, v2y);
+
+    if (mag1 === 0 || mag2 === 0) {
+      return 0;
+    }
+
+    const cos = Math.min(1, Math.max(-1, (v1x * v2x + v1y * v2y) / (mag1 * mag2)));
+    return (Math.acos(cos) * 180) / Math.PI;
+  }
+
   function renderPointsSvg(points) {
     const xs = points.map((p) => p.x);
     const ys = points.map((p) => p.y);
@@ -502,8 +629,21 @@
     const wrapper = document.createElement("div");
     wrapper.appendChild(renderCaption(`点: ${points.length} 個`));
 
+    const controls = makeControlsRow();
+    const { label: polygonLabel, checkbox: polygonCheckbox } = makeCheckboxControl(
+      "順番につなぐ(多角形)"
+    );
+    const clearButton = makeButtonControl("選択をクリア");
+    controls.append(polygonLabel, clearButton);
+    wrapper.appendChild(controls);
+
+    const info = document.createElement("p");
+    info.className = "asv-info";
+    info.textContent = "点を2つか3つクリックすると、距離や角度を表示します。";
+    wrapper.appendChild(info);
+
     const svg = makeSvgRoot();
-    svg.appendChild(renderGrid(toSvgX, toSvgY, minX, maxX, minY, maxY, true));
+    svg.appendChild(renderGrid(toSvgX, toSvgY, minX, maxX, minY, maxY));
 
     const frame = document.createElementNS(SVG_NS, "rect");
     frame.setAttribute("x", PAD);
@@ -512,6 +652,64 @@
     frame.setAttribute("height", VIEW_SIZE - 2 * PAD);
     frame.setAttribute("class", "asv-frame");
     svg.appendChild(frame);
+
+    const connectionGroup = document.createElementNS(SVG_NS, "g");
+    svg.appendChild(connectionGroup);
+
+    const pointGroup = document.createElementNS(SVG_NS, "g");
+    let selected = [];
+
+    function redraw() {
+      connectionGroup.textContent = "";
+
+      if (polygonCheckbox.checked && points.length >= 2) {
+        for (let i = 0; i < points.length; i += 1) {
+          const a = points[i];
+          const b = points[(i + 1) % points.length];
+          const line = document.createElementNS(SVG_NS, "line");
+          line.setAttribute("x1", toSvgX(a.x));
+          line.setAttribute("y1", toSvgY(a.y));
+          line.setAttribute("x2", toSvgX(b.x));
+          line.setAttribute("y2", toSvgY(b.y));
+          line.setAttribute("class", "asv-polygon-edge");
+          connectionGroup.appendChild(line);
+        }
+      }
+
+      for (let i = 0; i < selected.length - 1; i += 1) {
+        const a = points[selected[i]];
+        const b = points[selected[i + 1]];
+        const line = document.createElementNS(SVG_NS, "line");
+        line.setAttribute("x1", toSvgX(a.x));
+        line.setAttribute("y1", toSvgY(a.y));
+        line.setAttribute("x2", toSvgX(b.x));
+        line.setAttribute("y2", toSvgY(b.y));
+        line.setAttribute("class", "asv-connect-edge");
+        connectionGroup.appendChild(line);
+      }
+
+      if (selected.length === 2) {
+        const [ia, ib] = selected;
+        info.textContent = `P${ia + 1} - P${ib + 1} の距離: ${distance(
+          points[ia],
+          points[ib]
+        ).toFixed(4)}`;
+      } else if (selected.length === 3) {
+        const [ia, ib, ic] = selected;
+        info.textContent = `∠P${ia + 1}P${ib + 1}P${ic + 1} = ${angleAtVertex(
+          points[ia],
+          points[ib],
+          points[ic]
+        ).toFixed(4)}°`;
+      } else {
+        info.textContent = "点を2つか3つクリックすると、距離や角度を表示します。";
+      }
+
+      pointGroup.querySelectorAll(".asv-point").forEach((circle) => {
+        const i = Number(circle.dataset.index);
+        circle.classList.toggle("asv-point--selected", selected.includes(i));
+      });
+    }
 
     points.forEach((p, i) => {
       const cx = toSvgX(p.x);
@@ -522,23 +720,50 @@
       circle.setAttribute("cy", cy);
       circle.setAttribute("r", 5);
       circle.setAttribute("class", "asv-point");
+      circle.dataset.index = String(i);
 
       const title = document.createElementNS(SVG_NS, "title");
       title.textContent = `P${i + 1} (${p.x}, ${p.y})`;
       circle.appendChild(title);
-      svg.appendChild(circle);
+
+      circle.addEventListener("click", () => {
+        const pos = selected.indexOf(i);
+
+        if (pos !== -1) {
+          selected.splice(pos, 1);
+        } else {
+          selected.push(i);
+          if (selected.length > 3) {
+            selected.shift();
+          }
+        }
+
+        redraw();
+      });
+
+      pointGroup.appendChild(circle);
 
       const label = document.createElementNS(SVG_NS, "text");
       label.setAttribute("x", cx + 8);
       label.setAttribute("y", cy - 8);
       label.setAttribute("class", "asv-label");
       label.textContent = `P${i + 1}`;
-      svg.appendChild(label);
+      pointGroup.appendChild(label);
+    });
+
+    svg.appendChild(pointGroup);
+
+    polygonCheckbox.addEventListener("change", redraw);
+    clearButton.addEventListener("click", () => {
+      selected = [];
+      redraw();
     });
 
     wrapper.appendChild(svg);
     return wrapper;
   }
+
+  // ---- graph (force or tree layout, directed toggle, hover highlight) ----
 
   function renderChecklist(info) {
     const table = document.createElement("table");
@@ -589,9 +814,11 @@
     return table;
   }
 
-  function renderGraphSvg(n, edges, zeroIndexed) {
+  function renderGraphSvg(n, edges, zeroIndexed, graphInfo) {
     const lo = zeroIndexed ? 0 : 1;
-    const positions = computeForceLayout(n, edges, zeroIndexed);
+    const positions = graphInfo.isTree
+      ? computeTreeLayout(n, graphInfo.adjacency)
+      : computeForceLayout(n, edges, zeroIndexed);
     const xs = positions.map((p) => p.x);
     const ys = positions.map((p) => p.y);
     const { minX, minY, scale } = fitScale(xs, ys);
@@ -600,10 +827,38 @@
     const toSvgY = (y) => PAD + (y - minY) * scale;
 
     const wrapper = document.createElement("div");
-    wrapper.appendChild(renderCaption(`頂点数: ${n} / 辺数: ${edges.length}`));
+    wrapper.appendChild(
+      renderCaption(
+        `頂点数: ${n} / 辺数: ${edges.length}${
+          graphInfo.isTree ? "(木構造として階層表示)" : ""
+        }`
+      )
+    );
+
+    const controls = makeControlsRow();
+    const { label: directedLabel, checkbox: directedCheckbox } = makeCheckboxControl(
+      "有向として表示"
+    );
+    controls.append(directedLabel);
+    wrapper.appendChild(controls);
 
     const svg = makeSvgRoot();
-    const edgeGroup = document.createElementNS(SVG_NS, "g");
+
+    const defs = document.createElementNS(SVG_NS, "defs");
+    const marker = document.createElementNS(SVG_NS, "marker");
+    marker.setAttribute("id", "asv-arrowhead");
+    marker.setAttribute("viewBox", "0 0 10 10");
+    marker.setAttribute("refX", "9");
+    marker.setAttribute("refY", "5");
+    marker.setAttribute("markerWidth", "6");
+    marker.setAttribute("markerHeight", "6");
+    marker.setAttribute("orient", "auto-start-reverse");
+    const arrowShape = document.createElementNS(SVG_NS, "path");
+    arrowShape.setAttribute("d", "M 0 0 L 10 5 L 0 10 z");
+    arrowShape.setAttribute("class", "asv-arrowhead");
+    marker.appendChild(arrowShape);
+    defs.appendChild(marker);
+    svg.appendChild(defs);
 
     // Count how many times each unordered pair repeats, so repeats can be
     // drawn as offset curves instead of invisibly overlapping straight lines.
@@ -618,119 +873,273 @@
       const key = `${a}-${b}`;
       pairCounts.set(key, (pairCounts.get(key) || 0) + 1);
     });
-    const pairSeen = new Map();
 
-    edges.forEach((edge) => {
-      if (edge.u === edge.v) {
+    let bodyGroup = null;
+
+    function build() {
+      if (bodyGroup) {
+        bodyGroup.remove();
+      }
+
+      bodyGroup = document.createElementNS(SVG_NS, "g");
+      const edgeGroup = document.createElementNS(SVG_NS, "g");
+      const nodeGroup = document.createElementNS(SVG_NS, "g");
+      const pairSeen = new Map();
+
+      edges.forEach((edge) => {
+        if (edge.u === edge.v) {
+          const i = edge.u - lo;
+          const cx = toSvgX(positions[i].x);
+          const cy = toSvgY(positions[i].y);
+          const r = 14;
+
+          const loop = document.createElementNS(SVG_NS, "path");
+          loop.setAttribute(
+            "d",
+            `M ${cx - 6} ${cy - 8} C ${cx - r - 8} ${cy - r - 14}, ${cx + r + 8} ${
+              cy - r - 14
+            }, ${cx + 6} ${cy - 8}`
+          );
+          loop.setAttribute("class", "asv-edge asv-edge--loop");
+          loop.dataset.a = String(i);
+          loop.dataset.b = String(i);
+
+          const title = document.createElementNS(SVG_NS, "title");
+          title.textContent = `自己ループ: ${edge.u}`;
+          loop.appendChild(title);
+          edgeGroup.appendChild(loop);
+          return;
+        }
+
+        const a = Math.min(edge.u, edge.v);
+        const b = Math.max(edge.u, edge.v);
+        const key = `${a}-${b}`;
+        const count = pairCounts.get(key);
+        const seenSoFar = pairSeen.get(key) || 0;
+        pairSeen.set(key, seenSoFar + 1);
+
         const i = edge.u - lo;
-        const cx = toSvgX(positions[i].x);
-        const cy = toSvgY(positions[i].y);
-        const r = 14;
+        const j = edge.v - lo;
+        const x1 = toSvgX(positions[i].x);
+        const y1 = toSvgY(positions[i].y);
+        const x2 = toSvgX(positions[j].x);
+        const y2 = toSvgY(positions[j].y);
 
-        const loop = document.createElementNS(SVG_NS, "path");
-        loop.setAttribute(
-          "d",
-          `M ${cx - 6} ${cy - 8} C ${cx - r - 8} ${cy - r - 14}, ${cx + r + 8} ${
-            cy - r - 14
-          }, ${cx + 6} ${cy - 8}`
-        );
-        loop.setAttribute("class", "asv-edge asv-edge--loop");
+        let el;
+
+        if (count > 1) {
+          const mx = (x1 + x2) / 2;
+          const my = (y1 + y2) / 2;
+          const dx = x2 - x1;
+          const dy = y2 - y1;
+          const len = Math.sqrt(dx * dx + dy * dy) || 1;
+          const nx = -dy / len;
+          const ny = dx / len;
+          const side = seenSoFar % 2 === 0 ? 1 : -1;
+          const magnitude = 10 * (Math.floor(seenSoFar / 2) + 1);
+          const cxp = mx + nx * magnitude * side;
+          const cyp = my + ny * magnitude * side;
+
+          el = document.createElementNS(SVG_NS, "path");
+          el.setAttribute("d", `M ${x1} ${y1} Q ${cxp} ${cyp} ${x2} ${y2}`);
+          el.setAttribute("class", "asv-edge asv-edge--multi");
+        } else {
+          el = document.createElementNS(SVG_NS, "line");
+          el.setAttribute("x1", x1);
+          el.setAttribute("y1", y1);
+          el.setAttribute("x2", x2);
+          el.setAttribute("y2", y2);
+          el.setAttribute("class", "asv-edge");
+        }
+
+        el.dataset.a = String(i);
+        el.dataset.b = String(j);
+
+        if (directedCheckbox.checked) {
+          el.setAttribute("marker-end", "url(#asv-arrowhead)");
+        }
 
         const title = document.createElementNS(SVG_NS, "title");
-        title.textContent = `自己ループ: ${edge.u}`;
-        loop.appendChild(title);
-        edgeGroup.appendChild(loop);
-        return;
-      }
+        title.textContent =
+          edge.w !== undefined
+            ? `${edge.u} - ${edge.v} (${edge.w})`
+            : `${edge.u} - ${edge.v}`;
+        el.appendChild(title);
+        edgeGroup.appendChild(el);
 
-      const a = Math.min(edge.u, edge.v);
-      const b = Math.max(edge.u, edge.v);
-      const key = `${a}-${b}`;
-      const count = pairCounts.get(key);
-      const seenSoFar = pairSeen.get(key) || 0;
-      pairSeen.set(key, seenSoFar + 1);
+        if (edge.w !== undefined) {
+          const label = document.createElementNS(SVG_NS, "text");
+          label.setAttribute("x", (x1 + x2) / 2);
+          label.setAttribute("y", (y1 + y2) / 2);
+          label.setAttribute("class", "asv-weight");
+          label.textContent = String(edge.w);
+          edgeGroup.appendChild(label);
+        }
+      });
 
-      const i = edge.u - lo;
-      const j = edge.v - lo;
-      const x1 = toSvgX(positions[i].x);
-      const y1 = toSvgY(positions[i].y);
-      const x2 = toSvgX(positions[j].x);
-      const y2 = toSvgY(positions[j].y);
+      for (let i = 0; i < n; i += 1) {
+        const cx = toSvgX(positions[i].x);
+        const cy = toSvgY(positions[i].y);
 
-      let el;
+        const nodeWrap = document.createElementNS(SVG_NS, "g");
+        nodeWrap.setAttribute("class", "asv-node-wrap");
+        nodeWrap.dataset.index = String(i);
 
-      if (count > 1) {
-        const mx = (x1 + x2) / 2;
-        const my = (y1 + y2) / 2;
-        const dx = x2 - x1;
-        const dy = y2 - y1;
-        const len = Math.sqrt(dx * dx + dy * dy) || 1;
-        const nx = -dy / len;
-        const ny = dx / len;
-        const side = seenSoFar % 2 === 0 ? 1 : -1;
-        const magnitude = 10 * (Math.floor(seenSoFar / 2) + 1);
-        const cxp = mx + nx * magnitude * side;
-        const cyp = my + ny * magnitude * side;
+        const circle = document.createElementNS(SVG_NS, "circle");
+        circle.setAttribute("cx", cx);
+        circle.setAttribute("cy", cy);
+        circle.setAttribute("r", 10);
+        circle.setAttribute("class", "asv-node");
 
-        el = document.createElementNS(SVG_NS, "path");
-        el.setAttribute("d", `M ${x1} ${y1} Q ${cxp} ${cyp} ${x2} ${y2}`);
-        el.setAttribute("class", "asv-edge asv-edge--multi");
-      } else {
-        el = document.createElementNS(SVG_NS, "line");
-        el.setAttribute("x1", x1);
-        el.setAttribute("y1", y1);
-        el.setAttribute("x2", x2);
-        el.setAttribute("y2", y2);
-        el.setAttribute("class", "asv-edge");
-      }
+        const title = document.createElementNS(SVG_NS, "title");
+        title.textContent = `${i + lo}`;
+        circle.appendChild(title);
+        nodeWrap.appendChild(circle);
 
-      const title = document.createElementNS(SVG_NS, "title");
-      title.textContent =
-        edge.w !== undefined
-          ? `${edge.u} - ${edge.v} (${edge.w})`
-          : `${edge.u} - ${edge.v}`;
-      el.appendChild(title);
-      edgeGroup.appendChild(el);
-
-      if (edge.w !== undefined) {
         const label = document.createElementNS(SVG_NS, "text");
-        label.setAttribute("x", (x1 + x2) / 2);
-        label.setAttribute("y", (y1 + y2) / 2);
-        label.setAttribute("class", "asv-weight");
-        label.textContent = String(edge.w);
-        edgeGroup.appendChild(label);
+        label.setAttribute("x", cx);
+        label.setAttribute("y", cy);
+        label.setAttribute("class", "asv-node-label");
+        label.setAttribute("text-anchor", "middle");
+        label.setAttribute("dominant-baseline", "central");
+        label.textContent = String(i + lo);
+        nodeWrap.appendChild(label);
+
+        nodeWrap.addEventListener("mouseenter", () => {
+          const relatedEdges = Array.from(
+            edgeGroup.querySelectorAll(`[data-a="${i}"], [data-b="${i}"]`)
+          );
+          const relatedNodes = new Set([i]);
+          relatedEdges.forEach((e) => {
+            relatedNodes.add(Number(e.dataset.a));
+            relatedNodes.add(Number(e.dataset.b));
+          });
+
+          edgeGroup.querySelectorAll(".asv-edge").forEach((e) => {
+            const active = relatedEdges.includes(e);
+            e.classList.toggle("asv-edge--active", active);
+            e.classList.toggle("asv-edge--dim", !active);
+          });
+          nodeGroup.querySelectorAll(".asv-node-wrap").forEach((w) => {
+            w.classList.toggle(
+              "asv-node--dim",
+              !relatedNodes.has(Number(w.dataset.index))
+            );
+          });
+        });
+
+        nodeWrap.addEventListener("mouseleave", () => {
+          edgeGroup
+            .querySelectorAll(".asv-edge--active, .asv-edge--dim")
+            .forEach((e) => e.classList.remove("asv-edge--active", "asv-edge--dim"));
+          nodeGroup
+            .querySelectorAll(".asv-node--dim")
+            .forEach((w) => w.classList.remove("asv-node--dim"));
+        });
+
+        nodeGroup.appendChild(nodeWrap);
+      }
+
+      bodyGroup.append(edgeGroup, nodeGroup);
+      svg.appendChild(bodyGroup);
+    }
+
+    build();
+    directedCheckbox.addEventListener("change", build);
+
+    wrapper.appendChild(svg);
+    wrapper.appendChild(renderChecklist(graphInfo));
+    return wrapper;
+  }
+
+  // ---- grid / maze ----
+
+  function renderGridSvg(h, w, rows) {
+    const wrapper = document.createElement("div");
+    wrapper.appendChild(renderCaption(`グリッド: ${h} 行 × ${w} 列`));
+
+    const cellSize = Math.min(
+      (VIEW_SIZE - 2 * PAD) / w,
+      (VIEW_SIZE - 2 * PAD) / h
+    );
+    const totalW = cellSize * w;
+    const totalH = cellSize * h;
+    const offsetX = (VIEW_SIZE - totalW) / 2;
+    const offsetY = (VIEW_SIZE - totalH) / 2;
+
+    const charOrder = [];
+    const seen = new Set();
+    rows.forEach((row) => {
+      for (const ch of row) {
+        if (!seen.has(ch)) {
+          seen.add(ch);
+          charOrder.push(ch);
+        }
       }
     });
 
-    svg.appendChild(edgeGroup);
+    const specialColors = {
+      ".": "var(--asv-grid-empty)",
+      "#": "var(--asv-grid-wall)"
+    };
+    let categoricalIndex = 0;
+    const colorFor = {};
+    charOrder.forEach((ch) => {
+      if (specialColors[ch]) {
+        colorFor[ch] = specialColors[ch];
+        return;
+      }
+      colorFor[ch] = CATEGORICAL_COLORS[categoricalIndex % CATEGORICAL_COLORS.length];
+      categoricalIndex += 1;
+    });
 
-    for (let i = 0; i < n; i += 1) {
-      const cx = toSvgX(positions[i].x);
-      const cy = toSvgY(positions[i].y);
+    const svg = document.createElementNS(SVG_NS, "svg");
+    svg.setAttribute("viewBox", `0 0 ${VIEW_SIZE} ${VIEW_SIZE}`);
+    svg.setAttribute("class", "asv-svg");
+    svg.setAttribute("role", "img");
 
-      const circle = document.createElementNS(SVG_NS, "circle");
-      circle.setAttribute("cx", cx);
-      circle.setAttribute("cy", cy);
-      circle.setAttribute("r", 10);
-      circle.setAttribute("class", "asv-node");
+    for (let r = 0; r < h; r += 1) {
+      for (let c = 0; c < w; c += 1) {
+        const ch = rows[r][c];
+        const rect = document.createElementNS(SVG_NS, "rect");
+        rect.setAttribute("x", offsetX + c * cellSize);
+        rect.setAttribute("y", offsetY + r * cellSize);
+        rect.setAttribute("width", cellSize);
+        rect.setAttribute("height", cellSize);
+        rect.setAttribute("class", "asv-grid-cell");
+        rect.style.fill = colorFor[ch];
 
-      const title = document.createElementNS(SVG_NS, "title");
-      title.textContent = `${i + lo}`;
-      circle.appendChild(title);
-      svg.appendChild(circle);
-
-      const label = document.createElementNS(SVG_NS, "text");
-      label.setAttribute("x", cx);
-      label.setAttribute("y", cy);
-      label.setAttribute("class", "asv-node-label");
-      label.setAttribute("text-anchor", "middle");
-      label.setAttribute("dominant-baseline", "central");
-      label.textContent = String(i + lo);
-      svg.appendChild(label);
+        const title = document.createElementNS(SVG_NS, "title");
+        title.textContent = `(${r + 1}, ${c + 1}) = '${ch}'`;
+        rect.appendChild(title);
+        svg.appendChild(rect);
+      }
     }
 
+    const border = document.createElementNS(SVG_NS, "rect");
+    border.setAttribute("x", offsetX);
+    border.setAttribute("y", offsetY);
+    border.setAttribute("width", totalW);
+    border.setAttribute("height", totalH);
+    border.setAttribute("class", "asv-frame");
+    svg.appendChild(border);
+
     wrapper.appendChild(svg);
-    wrapper.appendChild(renderChecklist(analyzeGraph(n, edges, zeroIndexed)));
+
+    const legend = document.createElement("div");
+    legend.className = "asv-legend";
+    charOrder.forEach((ch) => {
+      const item = document.createElement("span");
+      item.className = "asv-legend-item";
+      const swatch = document.createElement("span");
+      swatch.className = "asv-legend-swatch";
+      swatch.style.background = colorFor[ch];
+      const displayCh = ch === " " ? "(space)" : ch;
+      item.append(swatch, ` ${displayCh}`);
+      legend.appendChild(item);
+    });
+    wrapper.appendChild(legend);
+
     return wrapper;
   }
 
@@ -795,9 +1204,17 @@
     const asGraph = tryParseAsGraph(text);
 
     if (asGraph) {
-      injectButton(heading, pre, () =>
-        renderGraphSvg(asGraph.n, asGraph.edges, asGraph.zeroIndexed)
-      );
+      injectButton(heading, pre, () => {
+        const info = analyzeGraph(asGraph.n, asGraph.edges, asGraph.zeroIndexed);
+        return renderGraphSvg(asGraph.n, asGraph.edges, asGraph.zeroIndexed, info);
+      });
+      return;
+    }
+
+    const asGrid = tryParseAsGrid(text);
+
+    if (asGrid) {
+      injectButton(heading, pre, () => renderGridSvg(asGrid.h, asGrid.w, asGrid.rows));
     }
   }
 

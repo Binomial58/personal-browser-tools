@@ -15,6 +15,9 @@
   --asv-series: #2a78d6;
   --asv-good: #1baf7a;
   --asv-bad: #e34948;
+  --asv-accent: #eb6834;
+  --asv-grid-empty: #ffffff;
+  --asv-grid-wall: #3a3a38;
 }
 
 .asv-toggle-button {
@@ -51,6 +54,45 @@
   text-align: center;
 }
 
+.asv-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.asv-toggle-label {
+  font-size: 12px;
+  color: var(--asv-text);
+  cursor: pointer;
+  user-select: none;
+}
+
+.asv-clear-button {
+  padding: 2px 8px;
+  border: 1px solid var(--asv-border);
+  border-radius: 4px;
+  background: var(--asv-surface);
+  color: var(--asv-text);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.asv-clear-button:hover {
+  background: var(--asv-grid);
+}
+
+.asv-info {
+  margin: 0 0 8px;
+  font-size: 12px;
+  color: var(--asv-text);
+  text-align: center;
+  min-height: 1.4em;
+}
+
 .asv-svg {
   display: block;
   width: 100%;
@@ -84,6 +126,24 @@
   fill: var(--asv-series);
   stroke: var(--asv-surface);
   stroke-width: 2;
+  cursor: pointer;
+}
+
+.asv-point--selected {
+  fill: var(--asv-accent);
+  r: 7;
+}
+
+.asv-connect-edge {
+  stroke: var(--asv-accent);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.asv-polygon-edge {
+  stroke: var(--asv-border);
+  stroke-width: 2;
+  stroke-dasharray: 4 3;
 }
 
 .asv-label {
@@ -97,6 +157,7 @@
   stroke: var(--asv-muted);
   stroke-width: 2;
   stroke-linecap: round;
+  transition: stroke-opacity 0.1s ease;
 }
 
 .asv-edge--loop {
@@ -106,6 +167,28 @@
 
 .asv-edge--multi {
   stroke: var(--asv-series);
+}
+
+.asv-edge--active {
+  stroke: var(--asv-accent);
+  stroke-width: 3;
+}
+
+.asv-edge--dim {
+  stroke-opacity: 0.2;
+}
+
+.asv-arrowhead {
+  fill: var(--asv-muted);
+}
+
+.asv-node-wrap {
+  cursor: pointer;
+  transition: opacity 0.1s ease;
+}
+
+.asv-node-wrap.asv-node--dim {
+  opacity: 0.25;
 }
 
 .asv-node {
@@ -161,4 +244,34 @@
 
 .asv-mark--no {
   color: var(--asv-bad);
+}
+
+.asv-grid-cell {
+  stroke: var(--asv-grid);
+  stroke-width: 0.5;
+}
+
+.asv-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--asv-text);
+}
+
+.asv-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: Consolas, "Courier New", monospace;
+}
+
+.asv-legend-swatch {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 1px solid var(--asv-border);
+  border-radius: 2px;
 }
